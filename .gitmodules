@@ -1,6 +1,0 @@
-[submodule "PPop"]
-	path = PPop
-	url = https://github.com/kammerje/P-pop
-[submodule "PPopPhotometry"]
-	path = PPopPhotometry
-	url = https://github.com/kammerje/P-pop-Photometry
