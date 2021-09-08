@@ -1,4 +1,6 @@
 import numpy as np
+from jwst_backgrounds import jbt
+from scipy.interpolate import interp1d
 
 
 def limb_darkening(r):
@@ -24,3 +26,30 @@ def get_SNR(signal,leakage,zodiacal,N,area,exp_time,eta):
     SNR_tot = signal_tot/noise_tot
 
     return SNR_per_t, SNR_tot
+
+
+def zodiacal_background(star,filter):
+
+    #Get JWST background
+    bg = jbt.background(star.RA, star.Dec, 10)
+
+    #Get Zodi background
+    zodi_data = bg.bkg_data['zodi_bg'].mean(axis=0)/1000*1e-26 #W/m^2/s/Hz/sr
+    waves = bg.bkg_data['wave_array']*1e-6 #m
+
+    #Interpolate the filter and the zodiacal background
+    f_filter = interp1d(filter.Wavel,filter.Trans)
+    f_zodi = interp1d(waves,zodi_data)
+
+    #Common wavelengths
+    common_waves = np.linspace(filter.Wavel[0],filter.Wavel[1],1000)
+
+    #Integrate over solid angle and multiply by filter transmission
+    zodi_irradiance_hz = np.pi*f_filter(common_waves)*f_zodi(common_waves) #W/m^2/Hz
+    #Convert to photons ((c/lam**2)/(hc/lam))
+    zodi_irradiance_phot = zodi_irradiance_hz/(h*common_waves) #phot/m^2/s/m
+
+    #Sum over wavelength
+    zodi_flux = np.trapz(zodi_irradiance_m,common_waves) #phot/m^2/s
+
+    return zodi_flux

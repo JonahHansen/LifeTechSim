@@ -1,6 +1,6 @@
 import numpy as np
 from astropy import constants as const
-from sim_functions import limb_darkening, get_SNR
+from sim_functions import limb_darkening, get_SNR, zodiacal_background
 from opticstools import knull
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
@@ -13,7 +13,11 @@ def pentagon(baseline):
     return np.array([xs,ys]).T[:-1]
 
 
-def compute(star,mode,wavelength,sz,scale_factor,area,exp_time,eta):
+def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
+
+    wavelength = filter.mean
+
+    zodiacal = zodiacal_background(star,filter)
 
     def get_nuller_response(baseline):
 
@@ -103,8 +107,3 @@ mn_r4 = (np.trapz(I*r**5, r)/np.trapz(I*r, r))**.25
 star_mas = Rstar/214*plx
 leakage_2nd = second_order_coeff*(mn_r2*star_mas)**2
 leakage_4th = fourth_order_coeff*(mn_r4*star_mas)**4
-
-#background in mag/sr
-zodiacal_background =  sfdsdfSD
-
-#Leakage/zodiacal are as a fraction of the starlight that gets into the nulled output
