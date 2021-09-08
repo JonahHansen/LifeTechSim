@@ -70,7 +70,7 @@ class background():
         self.bkg_data = self.read_bkg_data(self.cache_file)
 
         # Interpolate bathtub curve and package it
-        self.make_bathtub(wavelength)
+        #self.make_bathtub(wavelength)
 
     def myfile_from_healpix(self, ra, dec):
         # old versions of healpy don't have lonlat
@@ -91,7 +91,7 @@ class background():
 
         return wave_array, thermal_int
 
-    def read_bkg_data(self, cache_file, verbose=False):
+    def read_bkg_data(self, cache_file, verbose=True):
         """
         Method for reading one JWST background file, and parsing it.
 

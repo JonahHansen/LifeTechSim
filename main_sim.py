@@ -20,16 +20,15 @@ telescope_area = np.pi*(telescope_diameter/2)**2
 
 planet_path =
 
-#############################################################################
-#Generate photometry
-
 # Select the filters for which the photometry should be computed here. You can
 # simply use the filter names from the Spanish Virtual Observatory
 # (http://svo2.cab.inta-csic.es/theory/fps/).
 # str
-SVOid = 'JWST/MIRI.F560W'
+SVOid = 'JWST/MIRI.F1500W'
 #       'JWST/MIRI.F1000W'
-#       'JWST/MIRI.F1500W'
+
+#############################################################################
+#Generate photometry
 
 # Select the photometry tools to compute the fluxes from the stars and the
 # planets as well as their unit and the wavelength range in which the mission

@@ -58,19 +58,19 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
         pix2mas = wavelength/baseline*rad2mas*scale_factor/sz
 
-        #Calc stellar leakage
+        #Calc stellar leakage transmission
+
+        leakage = s_trans*star.Flux
 
         for planet in star.Planets:
 
             planet_pos = planet.PAngSep/pix2mas #in pixels
 
-
-
-
+            #Calc planet transmission
 
             signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
 
-            leakage = s_trans*star.Flux
+
 
 
     if mode == 2:
@@ -80,9 +80,15 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
             pix2mas = wavelength/baseline*rad2mas*scale_factor/sz
 
-            #Calc stellar leakage
+            #Calc stellar leakage transmission
+
+            leakage = s_trans*star.Flux
 
             planet_pos = planet.PAngSep/pix2mas #in pixels
+
+            #Calc planet transmission
+
+            signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
 
 
 #Find the null function numerically
