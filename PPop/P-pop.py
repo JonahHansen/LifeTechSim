@@ -93,10 +93,10 @@ ExozodiModel = Ertel2020
 # Select whether you want to display summary plots after loading the catalogs,
 # distributions and models selected above, how many test draws should be
 # done for generating these plots, and where you want to save them.
-SummaryPlots = True
-#SummaryPlots = False
-Ntest = 100000 # int
-#Ntest = 10000 # int
+#SummaryPlots = True
+SummaryPlots = False
+#Ntest = 100000 # int
+Ntest = 10000 # int
 #FigDir = None # if you don't want to save the summary plots
 FigDir = 'Figures/' # should end with a slash ("/")
 #block = True
@@ -104,8 +104,8 @@ block = False
 
 # Select a name for the output planet population table and how many universes
 # should be simulated.
-Name = 'TestPlanetPopulation' # str
-Nuniverses = 10 # int
+Name = 'TestPlanetPopulation2' # str
+Nuniverses = 2 # int
 
 
 # =============================================================================

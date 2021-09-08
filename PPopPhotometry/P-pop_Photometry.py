@@ -41,7 +41,7 @@ from Planet import Thermal, Reflected
 
 # Select the name of the planet population table for which the photometry
 # should be computed here.
-PathPlanetTable = '../P-pop/TestPlanetPopulation.txt' # str
+PathPlanetTable = '../PPop/TestPlanetPopulation2.txt' # str
 
 # Select the filters for which the photometry should be computed here. You can
 # simply use the filter names from the Spanish Virtual Observatory
@@ -59,15 +59,15 @@ SVOids = ['JWST/MIRI.F560W',\
 # is operating here.
 Sstar = [Blackbody] # list of Star
 Splanet = [Thermal, Reflected] # list of Planet
-Unit = 'uJy' # micro-Jansky
-#Unit = 'ph' # photons per second per square meter
+#Unit = 'uJy' # micro-Jansky
+Unit = 'ph' # photons per second per square meter
 Mission = 'MIR' # use AgeomMIR for reflected light (used for LIFE)
 #Mission = 'VIS' # use AgeomVIS for reflected light (used for HabEx/LUVOIR)
 
 # Select whether you want to display summary plots after loading the filters
 # and models selected above.
-SummaryPlots = True
-#SummaryPlots = False
+#SummaryPlots = True
+SummaryPlots = False
 #FigDir = None # if you don't want to save the summary plots
 FigDir = 'Figures/' # should end with a slash ("/")
 #block = True

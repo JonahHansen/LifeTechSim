@@ -20,7 +20,7 @@ import sys
 # =============================================================================
 
 class PlanetPopulation():
-    
+
     def __init__(self,
                  PathPlanetTable):
         """
@@ -29,14 +29,14 @@ class PlanetPopulation():
         PathPlanetTable: str
             Path of the planet table to be read.
         """
-        
+
         # Print.
         print('--> Reading planet table '+PathPlanetTable)
-        
+
         # Read the planet table.
         Table = open(PathPlanetTable, 'r')
         TableLines = Table.readlines()
-        
+
         Nuniverse = []
         Rp = [] # Rearth
         Porb = [] # d
@@ -58,6 +58,7 @@ class PlanetPopulation():
         fp = []
         Tp = [] # K
         Nstar = []
+        SName = []
         Rs = [] # Rsun
         Ms = [] # Msun
         Ts = [] # K
@@ -65,14 +66,14 @@ class PlanetPopulation():
         Stype = []
         RA = [] # deg
         Dec = [] # deg
-        
+
         Nlines = len(TableLines)
         for i, Line in enumerate(TableLines):
-            
+
             if (i % 10000 == 0):
                 sys.stdout.write('\rProcessed line %.0f of %.0f' % (i, Nlines))
                 sys.stdout.flush()
-            
+
             tempLine = Line.split('\t')
             if (i == 1):
                 # The second line (i = 1) contains the column names of the new
@@ -99,13 +100,14 @@ class PlanetPopulation():
                 Colfp = np.where(np.array(tempLine) == 'fp')[0][0]
                 ColTp = np.where(np.array(tempLine) == 'Tp')[0][0]
                 ColNstar = np.where(np.array(tempLine) == 'Nstar')[0][0]
+                ColSName = np.where(np.array(tempLine) == 'SName')[0][0]
                 ColRs = np.where(np.array(tempLine) == 'Rs')[0][0]
                 ColMs = np.where(np.array(tempLine) == 'Ms')[0][0]
                 ColTs = np.where(np.array(tempLine) == 'Ts')[0][0]
                 ColDs = np.where(np.array(tempLine) == 'Ds')[0][0]
                 ColStype = np.where(np.array(tempLine) == 'Stype')[0][0]
                 ColRA = np.where(np.array(tempLine) == 'RA')[0][0]
-                ColDec = np.where(np.array(tempLine) == 'Dec')[0][0] 
+                ColDec = np.where(np.array(tempLine) == 'Dec')[0][0]
             elif (i > 1):
                 Nuniverse += [int(tempLine[ColNuniverse])]
                 Rp += [float(tempLine[ColRp])] # Rearth
@@ -128,6 +130,7 @@ class PlanetPopulation():
                 fp += [float(tempLine[Colfp])]
                 Tp += [float(tempLine[ColTp])] # K
                 Nstar += [int(tempLine[ColNstar])]
+                SName += [str(tempLine[ColSName])]
                 Rs += [float(tempLine[ColRs])] # Rsun
                 Ms += [float(tempLine[ColMs])] # Msun
                 Ts += [float(tempLine[ColTs])] # K
@@ -138,7 +141,7 @@ class PlanetPopulation():
         sys.stdout.write('\rProcessed line %.0f of %.0f' % (Nlines, Nlines))
         sys.stdout.flush()
         print('')
-        
+
         self.Nuniverse = np.array(Nuniverse)
         self.Rp = np.array(Rp) # Rearth
         self.Porb = np.array(Porb) # d
@@ -160,6 +163,7 @@ class PlanetPopulation():
         self.fp = np.array(fp)
         self.Tp = np.array(Tp) # K
         self.Nstar = np.array(Nstar)
+        self.SName = np.array(SName)
         self.Rs = np.array(Rs) # Rsun
         self.Ms = np.array(Ms) # Msun
         self.Ts = np.array(Ts) # K
@@ -167,11 +171,11 @@ class PlanetPopulation():
         self.Stype = np.array(Stype)
         self.RA = np.array(RA) # deg
         self.Dec = np.array(Dec) # deg
-        
+
         self.Phot = {}
-        
+
         pass
-    
+
     def ComputeHZ(self,
                   Model='MS'):
         """
@@ -180,10 +184,10 @@ class PlanetPopulation():
         Model: MS, POST-MS
             Model for computing the habitable zone (au).
         """
-        
+
         # Print.
         print('--> Computing the habitable zone')
-        
+
         # Compute the habitable zone (au).
         if (Model == 'MS'):
             S0in, S0out = 1.7665, 0.3240
@@ -212,9 +216,9 @@ class PlanetPopulation():
             self.HZin = S0in+Ain*T+Bin*T**2+Cin*T**3 # au
             self.HZout = S0out+Aout*T+Bout*T**2+Cout*T**3 # au
         print('--> Using model '+str(Model))
-        
+
         pass
-    
+
     def appendPhotometry(self,
                          PathPhotometryTable,
                          Tag):
@@ -227,25 +231,25 @@ class PlanetPopulation():
             Tag for the self.Phot dictionary under which the photometry is
             appended.
         """
-        
+
         # Print.
         print('--> Reading photometry table '+PathPhotometryTable)
-        
+
         # Read the photometry table.
         Table = open(PathPhotometryTable, 'r')
         TableLines = Table.readlines()
-        
+
         self.Phot[Tag] = {}
         self.Phot[Tag]['HEAD'] = []
         self.Phot[Tag]['DATA'] = []
-        
+
         Nlines = len(TableLines)
         for i, Line in enumerate(TableLines):
-            
+
             if (i % 10000 == 0):
                 sys.stdout.write('\rProcessed line %.0f of %.0f' % (i, Nlines))
                 sys.stdout.flush()
-            
+
             tempLine = Line.split('\t')
             if (i == 1):
                 # The second line (i = 1) contains the column names of the new
@@ -260,8 +264,8 @@ class PlanetPopulation():
         sys.stdout.write('\rProcessed line %.0f of %.0f' % (Nlines, Nlines))
         sys.stdout.flush()
         print('')
-        
+
         for i in range(len(self.Phot[Tag]['DATA'])):
             self.Phot[Tag]['DATA'][i] = np.array(self.Phot[Tag]['DATA'][i])
-        
+
         pass
