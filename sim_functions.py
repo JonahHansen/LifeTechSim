@@ -34,7 +34,8 @@ def zodiacal_background(star,filter):
     bg = jbt.background(star.RA, star.Dec, 10)
 
     #Get Zodi background
-    zodi_data = bg.bkg_data['zodi_bg'].mean(axis=0)/1000*1e-26 #W/m^2/s/Hz/sr
+    min_index = np.argmin(bg.bkg_data['zodi_bg'][:,0])
+    zodi_data = bg.bkg_data['zodi_bg'][min_index]*1e6*1e-26 #W/m^2/Hz/sr
     waves = bg.bkg_data['wave_array']*1e-6 #m
 
     #Interpolate the filter and the zodiacal background
@@ -53,3 +54,20 @@ def zodiacal_background(star,filter):
     zodi_flux = np.trapz(zodi_irradiance_m,common_waves) #phot/m^2/s
 
     return zodi_flux
+
+
+def azimuthal_rms(image,r):
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+    sum = 0
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        sum += a**2
+
+    return np.sqrt(sum/n_angles)

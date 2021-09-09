@@ -17,7 +17,7 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
     wavelength = filter.mean
 
-    zodiacal = zodiacal_background(star,filter)
+    zodiacal = 4/5*zodiacal_background(star,filter)
 
     def get_nuller_response(baseline):
 
@@ -25,13 +25,13 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
         telescope_array = pentagon(baseline)
 
-        fov = wavelength/baseline*rad2mas*scale_factor
+        fov = wavelength/baseline*scale_factor #?????
         sky_angles = np.linspace(-fov/2,fov/2,sz)
 
         xy = np.meshgrid(sky_angles, sky_angles, indexing='ij')
 
-        x = telescope_positions[:,0]
-        y = telescope_positions[:,1]
+        x = telescope_array[:,0]/wavelength
+        y = telescope_array[:,1]/wavelength
 
         #Response is the 5 output electric fields as a function of the position on the sky
         response = np.zeros((5,sz,sz), dtype='complex')
@@ -39,7 +39,7 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
         for i in range(5):
             for k in range(5):
                 #Inputs have a phase equal to xy array - linear multiplied by spatial frequency
-                response[k] += np.exp(1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
+                response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
         response = np.abs(response)**2
         response /= (np.max(response[0])/5)
