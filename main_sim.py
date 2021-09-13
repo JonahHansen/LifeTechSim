@@ -1,6 +1,8 @@
 import numpy as np
+from itertools import chain
 from planet_retrieval import RetrievePlanetData as RPD
 from sim_computer import compute
+from astropy.table import Table
 
 import PPopPhotometry.PhotometryComputer
 from PPopPhotometry.Filters import SVO
@@ -19,6 +21,7 @@ mode =
 telescope_area = np.pi*(telescope_diameter/2)**2
 
 planet_path =
+output_path =
 
 # Select the filters for which the photometry should be computed here. You can
 # simply use the filter names from the Spanish Virtual Observatory
@@ -64,5 +67,19 @@ phot_path = planet_path+'_'+SVOid.split('/')[1]+'.txt'
 
 star_list = RPD(planet_path,phot_path)
 
+ls_star_data = []
 for star in star_list:
-    compute(star,mode,filter,sz,fov_scale_factor,telescope_area,exp_time,eta)
+    star_data = compute(star,mode,filter,sz,fov_scale_factor,telescope_area,exp_time,eta)
+    ls_star_data.append(star_data)
+
+dict_ls = list(chain.from_iterable(ls_star_data))
+Fits_table = Table(rows=dict_ls)
+
+Fits_Table.meta["Size"] = sz
+Fits_Table.meta["Architecture"] = ""
+Fits_Table.meta["Diameter"] = telescope_diameter
+Fits_Table.meta["Scan_Mode"] = ""
+Fits_Table.meta["Filter"] = filter.Name
+Fits_Table.meta["FOV_scale"] = fov_scale_factor
+
+Fits_table.write(output_path,format='fits')

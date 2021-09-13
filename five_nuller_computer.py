@@ -51,6 +51,7 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
         return response, k1, k2 #return intensity per telescope
 
+    ls_row_data = []
 
     if mode == 1:
         baseline = wavelength/2*rad2mas/star.HZAngle
@@ -70,7 +71,12 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
             signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
 
+            row_data = {"star_name":star.SName, "planet_name":planet.Name, "universe_no":planet.UNumber,
+                        "star_no":star.SNumber,"planet_no":planet.PNumber,
+                        "signal":signal,"leakage":leakage,"zodiacal":zodiacal,
+                        "exozodiacal":exozodiacal}
 
+            ls_row_data.append(row_data)
 
 
     if mode == 2:
@@ -89,6 +95,15 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
             #Calc planet transmission
 
             signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
+
+            row_data = {"star_name":star.SName, "planet_name":planet.Name, "universe_no":planet.UNumber,
+                        "star_no":star.SNumber,"planet_no":planet.PNumber,
+                        "signal":signal,"leakage":leakage,"zodiacal":zodiacal,
+                        "exozodiacal":exozodiacal}
+
+            ls_row_data.append(row_data)
+
+    return ls_row_data
 
 
 #Find the null function numerically
