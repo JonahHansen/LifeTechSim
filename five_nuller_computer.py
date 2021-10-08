@@ -13,11 +13,13 @@ def pentagon(baseline):
     return np.array([xs,ys]).T[:-1]
 
 
-def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
+def compute(star,mode,filter,sz,scale_factor,local_exozodi):
 
-    wavelength = filter.mean
+    #Define wavelength to fix baseline
+    wavelength = filter.mean #
 
-    zodiacal = 4/5*zodiacal_background(star,filter)
+    #zodiacal power (phot/s) per telescope
+    zodiacal = zodiacal_background(star,filter)
 
     def get_nuller_response(baseline):
 
@@ -25,11 +27,12 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
 
         telescope_array = pentagon(baseline)
 
-        fov = wavelength/baseline*scale_factor #?????
+        fov = wavelength/baseline*scale_factor
         sky_angles = np.linspace(-fov/2,fov/2,sz)
 
         xy = np.meshgrid(sky_angles, sky_angles, indexing='ij')
 
+        #x,y are telescope positions in units of wavelength
         x = telescope_array[:,0]/wavelength
         y = telescope_array[:,1]/wavelength
 
@@ -39,10 +42,11 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
         for i in range(5):
             for k in range(5):
                 #Inputs have a phase equal to xy array - linear multiplied by spatial frequency
+                #ul + vm?
                 response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
         response = np.abs(response)**2
-        response /= (np.max(response[0])/5)
+        response /= (np.max(response[0])/5) #normalise by flux per telescope
 
         #Create the kernel nulls. This is turning the output intensities into the kernel nulls (K in 2018 paper)
 
@@ -56,20 +60,19 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
     if mode == 1:
         baseline = wavelength/2*rad2mas/star.HZAngle
         response, k1, k2 = get_nuller_response(baseline)
-
         pix2mas = wavelength/baseline*rad2mas*scale_factor/sz
 
-        #Calc stellar leakage transmission
+        #exozodiacal flux (phot/s/m^2) per telescope
+        exozodiacal = calc_exozodiacal(star,response[1],response[2],local_exozodi,pix2mas,sz)
 
+        #Calc stellar leakage transmission
         leakage = s_trans*star.Flux
 
         for planet in star.Planets:
 
-            planet_pos = planet.PAngSep/pix2mas #in pixels
-
-            #Calc planet transmission
-
-            signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
+            #signal flux (phot/s/m^2) per telescope
+            signal_k1 = calc_planet_signal(k1,planet,pix2mas)
+            signal_k2 = calc_planet_signal(k2,planet,pix2mas)
 
             row_data = {"star_name":star.SName, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,
@@ -83,23 +86,23 @@ def compute(star,mode,filter,sz,scale_factor,area,exp_time,eta):
         for planet in star.Planets:
             baseline = wavelength/2*rad2mas/planet.PAngSep
             response, k1, k2 = get_nuller_response(baseline)
-
             pix2mas = wavelength/baseline*rad2mas*scale_factor/sz
 
-            #Calc stellar leakage transmission
+            #exozodiacal flux (phot/s/m^2) per telescope
+            exozodiacal = calc_exozodiacal(star,response[1],response[2],local_exozodi,pix2mas,sz)
 
+            #Calc stellar leakage transmission
             leakage = s_trans*star.Flux
 
-            planet_pos = planet.PAngSep/pix2mas #in pixels
-
-            #Calc planet transmission
-
-            signal = 2/5*(p_trans_k1+p_trans_k1)*(planet.RefFlux + planet.ThermFlux)
+            #signal flux (phot/s/m^2) per telescope
+            signal_k1 = calc_planet_signal(k1,planet,pix2mas)
+            signal_k2 = calc_planet_signal(k2,planet,pix2mas)
 
             row_data = {"star_name":star.SName, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,
-                        "signal":signal,"leakage":leakage,"zodiacal":zodiacal,
-                        "exozodiacal":exozodiacal}
+                        "signal_k1":signal_k1,"leakage_k1":leakage_k1,
+                        "signal_k2":signal_k2,"leakage_k2":leakage_k2,
+                        "zodiacal":zodiacal,"exozodiacal":exozodiacal}
 
             ls_row_data.append(row_data)
 

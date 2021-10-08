@@ -1,7 +1,8 @@
 import numpy as np
 from itertools import chain
 from planet_retrieval import RetrievePlanetData as RPD
-from sim_computer import compute
+from five_nuller_computer import compute
+from sim_functions import calc_local_zodiacal_minimum
 from astropy.table import Table
 
 import PPopPhotometry.PhotometryComputer
@@ -11,14 +12,8 @@ from PPopPhotometry.Planet import Thermal, Reflected
 
 #Main parameters
 sz = 400
-telescope_diameter =
-exp_time =
 fov_scale_factor = 3 #Need better name - number of phase cycles to
-eta =
 mode =
-
-#Important derived parameters
-telescope_area = np.pi*(telescope_diameter/2)**2
 
 planet_path =
 output_path =
@@ -67,9 +62,11 @@ phot_path = planet_path+'_'+SVOid.split('/')[1]+'.txt'
 
 star_list = RPD(planet_path,phot_path)
 
+local_exozodi = calc_local_zodiacal_minimum(filter)
+
 ls_star_data = []
 for star in star_list:
-    star_data = compute(star,mode,filter,sz,fov_scale_factor,telescope_area,exp_time,eta)
+    star_data = compute(star,mode,filter,sz,fov_scale_factor,local_exozodi)
     ls_star_data.append(star_data)
 
 dict_ls = list(chain.from_iterable(ls_star_data))
@@ -77,7 +74,6 @@ Fits_table = Table(rows=dict_ls)
 
 Fits_Table.meta["Size"] = sz
 Fits_Table.meta["Architecture"] = ""
-Fits_Table.meta["Diameter"] = telescope_diameter
 Fits_Table.meta["Scan_Mode"] = ""
 Fits_Table.meta["Filter"] = filter.Name
 Fits_Table.meta["FOV_scale"] = fov_scale_factor

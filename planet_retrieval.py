@@ -39,7 +39,8 @@ class Star():
                  Dec, # deg
                  flux, #phot/s/m^2
                  HzMin, #au
-                 HzMax #au
+                 HzMax, #au
+                 z #exozodis
                  ):
 
         self.Name = Name #Name of star
@@ -59,6 +60,8 @@ class Star():
         self.HZMin = HzMin #Outer? limit on HZ
         self.HZMax = HzMax #Inner? limit on HZ
         self.HZAngle = (0.5*(HzMin + HzMax)*au/(Dist*pc))*rad2mas #Average projected angle of HZ
+
+        self.Exzod = z #Exozodiacal light level
 
         self.SLum = Luminosity(Teff,Rad) #Luminosity in Lsol
         self.HZEst = np.sqrt(L)*1000/Dist #Estimate of HZ from Luminosity
@@ -81,7 +84,6 @@ class Planet():
                  Abond,
                  AgeomVIS,
                  AgeomMIR,
-                 z,
                  a, #au
                  rSep, #au
                  AngSep, #arcsec
@@ -110,8 +112,6 @@ class Planet():
         self.Abond = Abond #Bond albedo
         self.AgeomVIS = AgeomVIS #Geometric visible albedo
         self.AgeomMIR = AgeomMIR #Geometric MIR albedo
-
-        self.Exzod = z #Exozodiacal light level
 
         self.a = a #Semi major axis in au
         self.PrSep = rSep #Physical separation of planet in au
@@ -164,7 +164,8 @@ def RetrievePlanetData(planet_path,phot_path):
                 planet_data.Dec[0],
                 planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Star.Blackbody")][0],
                 planet_data.HZin[0],
-                planet_data.HZout[0]
+                planet_data.HZout[0],
+                planet_data.z[0]
                 )
 
     #Add star to list
@@ -191,7 +192,8 @@ def RetrievePlanetData(planet_path,phot_path):
                             planet_data.Dec[i],
                             planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Star.Blackbody")][i],
                             planet_data.HZin[i],
-                            planet_data.HZout[i]
+                            planet_data.HZout[i],
+                            planet_data.z[i]
                             )
             star_list.append(new_star)
 
@@ -215,7 +217,6 @@ def RetrievePlanetData(planet_path,phot_path):
                         planet_data.Abond[i],
                         planet_data.AgeomVIS[i],
                         planet_data.AgeomMIR[i],
-                        planet_data.z[i],
                         planet_data.ap[i],
                         planet_data.rp[i],
                         planet_data.AngSep[i],
