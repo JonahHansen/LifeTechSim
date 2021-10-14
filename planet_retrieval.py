@@ -64,9 +64,15 @@ class Star():
         self.Exzod = z #Exozodiacal light level
 
         self.SLum = Luminosity(Teff,Rad) #Luminosity in Lsol
-        self.HZEst = np.sqrt(L)*1000/Dist #Estimate of HZ from Luminosity
+
+        parallax_mas = 1000/Dist
+
+        self.HZEst = np.sqrt(L)*parallax_mas #Estimate of HZ from Luminosity
+
+        self.angRad = Rad/215*parallax_mas #angular radius of star in mas
 
         self.Planets = [] #List of planets associated with the star (multiple universes)
+
 
 class Planet():
     def __init__(self,
