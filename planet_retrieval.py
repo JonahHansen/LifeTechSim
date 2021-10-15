@@ -67,7 +67,7 @@ class Star():
 
         parallax_mas = 1000/Dist
 
-        self.HZEst = np.sqrt(L)*parallax_mas #Estimate of HZ from Luminosity
+        self.HZEst = np.sqrt(self.SLum)*parallax_mas #Estimate of HZ from Luminosity
 
         self.angRad = Rad/215*parallax_mas #angular radius of star in mas
 
@@ -168,7 +168,7 @@ def RetrievePlanetData(planet_path,phot_path):
                 planet_data.Ms[0],
                 planet_data.RA[0],
                 planet_data.Dec[0],
-                planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Star.Blackbody")][0],
+                planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Star.Blackbody")][0],
                 planet_data.HZin[0],
                 planet_data.HZout[0],
                 planet_data.z[0]
@@ -196,7 +196,7 @@ def RetrievePlanetData(planet_path,phot_path):
                             planet_data.Ms[i],
                             planet_data.RA[i],
                             planet_data.Dec[i],
-                            planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Star.Blackbody")][i],
+                            planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Star.Blackbody")][i],
                             planet_data.HZin[i],
                             planet_data.HZout[i],
                             planet_data.z[i]
@@ -230,8 +230,8 @@ def RetrievePlanetData(planet_path,phot_path):
                         planet_data.Fp[i],
                         planet_data.fp[i],
                         planet_data.Tp[i],
-                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Planet.Reflected")][i],
-                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("Planet.Thermal")][i],
+                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Planet.Reflected")][i],
+                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Planet.Thermal")][i],
                         )
 
         planet_list.append(planet)

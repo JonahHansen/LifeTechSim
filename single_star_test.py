@@ -7,9 +7,9 @@ from PPopPhotometry.Filters import SVO
 #Main parameters
 sz = 400
 fov_scale_factor = 3 #Need better name - number of phase cycles to
-mode =
+mode = 2
 
-first_run = True
+first_run = False
 
 # Select the filters for which the photometry should be computed here. You can
 # simply use the filter names from the Spanish Virtual Observatory
@@ -26,15 +26,16 @@ block = True
 
 # Don't modify the following code.
 filter = SVO.getFilter(SVOid, SummaryPlots, FigDir, block)
+filters = [filter]
 
 if first_run:
 
     from planet_retrieval import RetrievePlanetData as RPD
-    import PPopPhotometry.PhotometryComputer
+    import PPopPhotometry.PhotometryComputer as PhotometryComputer
     from PPopPhotometry.Star import Blackbody
     from PPopPhotometry.Planet import Thermal, Reflected
 
-    planet_path =
+    planet_path = "PPop/TestPlanetPopulation2.txt"
 
 
     #############################################################################
@@ -48,8 +49,8 @@ if first_run:
     Unit = 'ph' # photons per second per square meter
     Mission = 'MIR' # use AgeomMIR for reflected light (used for LIFE)
 
-    PhotComp = PhotometryComputer.PhotometryComputer(PathPlanetTable,
-                                                     filter,
+    PhotComp = PhotometryComputer.PhotometryComputer(planet_path,
+                                                     filters,
                                                      Sstar,
                                                      Splanet,
                                                      Unit,
@@ -59,17 +60,25 @@ if first_run:
                                                      block)
     PhotComp.Run()
 
-    phot_path = planet_path+'_'+SVOid.split('/')[1]+'.txt'
+    phot_path = planet_path.split(".")[0]+'_'+SVOid.split('/')[1]+'.txt'
 
     ########################################################################
 
     star_list = RPD(planet_path,phot_path)
 
-    pickle.dump(star_list, "sst_star_list.pkl")
+    f = open("sst_star_list.pkl","wb")
+
+    pickle.dump(star_list, f)
+
+    f.close()
 
 else:
 
-    star_list = pickle.load("sst_star_list.pkl")
+    f = open("sst_star_list.pkl","rb")
+
+    star_list = pickle.load(f)
+
+    f.close()
 
 local_exozodi = calc_local_zodiacal_minimum(filter)
 

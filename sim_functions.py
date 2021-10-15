@@ -115,7 +115,7 @@ def calc_local_zodiacal_minimum(filter):
         zodi_spec_rad = zodi_radiance_hz/(common_waves*h) #photons/s/m^2/m/sr
 
         #Sum over wavelength => Resultant power
-        zodi_rad = np.trapz(zodi_spec_power,common_waves) #photons/s/m^2/sr
+        zodi_rad = np.trapz(zodi_spec_rad,common_waves) #photons/s/m^2/sr
 
         return zodi_rad
 
@@ -137,14 +137,18 @@ def calc_exozodiacal(star,r1,r2,local_exozodi,pix2mas,sz):
     lambda_r = np.piecewise(r, [r < r_in, ((r >= r_in) & (r <= r_out)), r > r_out],
                                [0, lambda x: (x-r_in)/(r_out-r_in), 1])
     flux_dist = lambda_r*r**(-2.3)
-    flux_dist[sz/2,sz/2] = 0
+    flux_dist[int(sz/2),int(sz/2)] = 0
 
     trans_map = (r1 + r2)/2
 
     #Zodi flux at 1au is 2*local amount*exozodis
     local_scale_factor = 2*local_exozodi*star.Exzod
 
-    return np.sum(flux_dist*trans_map*local_scale_factor)
+    solid_angle = (pix2mas*sz/rad2mas)**2
+
+    import pdb; pdb.set_trace()
+
+    return np.sum(flux_dist*trans_map*local_scale_factor*solid_angle)
 
 
 def azimuthal_rms(image,r):

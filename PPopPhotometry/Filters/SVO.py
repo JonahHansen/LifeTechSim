@@ -13,7 +13,7 @@
 import numpy as np
 import urllib.request
 
-from Filters import Filter
+from . import Filter
 
 
 # =============================================================================
@@ -35,17 +35,17 @@ def getFilter(SVOid,
         Directory to which summary plots are saved.
     block: bool
         If True, blocks plots when showing.
-    
+
     Returns
     -------
     Filter: instance
         Instance of class Filter.
     """
-    
+
     url = 'http://svo2.cab.inta-csic.es/theory/fps/getdata.php?format=ascii&id='+SVOid
     f = urllib.request.urlopen(url)
     DataLines = f.readlines()
-    
+
     Wavel = [] # m
     Trans = []
     for i in range(len(DataLines)):
@@ -54,12 +54,12 @@ def getFilter(SVOid,
         Trans += [float(tempLine[1][:-3])]
     Wavel = np.array(Wavel) # m
     Trans = np.array(Trans)
-    
+
     tempFilter = Filter.Filter(SVOid,
                                Wavel,
                                Trans)
     if (SummaryPlots == True):
         tempFilter.SummaryPlot(FigDir=FigDir,
                                block=block)
-    
+
     return tempFilter

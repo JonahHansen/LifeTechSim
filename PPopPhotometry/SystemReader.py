@@ -13,7 +13,7 @@
 import numpy as np
 import sys
 
-import System
+from . import System
 
 
 # =============================================================================
@@ -21,7 +21,7 @@ import System
 # =============================================================================
 
 class SystemReader():
-    
+
     def __init__(self,
                  PathPlanetTable):
         """
@@ -30,24 +30,24 @@ class SystemReader():
         PathPlanetTable: str
             Path of the planet table to be read.
         """
-        
+
         # Print.
         print('--> Initializing SystemReader')
-        
+
         self.PathPlanetTable = PathPlanetTable
-        
+
         pass
-    
+
     def Open(self):
         """
         """
-        
+
         # Open the planet table.
         Table = open(self.PathPlanetTable, 'r')
         self.Lines = Table.readlines()
         self.Nlines = len(self.Lines)
         Table.close()
-        
+
         # The second line (i = 1) contains the column names of the new P-pop
         # while the first line (i = 0) contains the column names of the old
         # P-pop.
@@ -80,25 +80,25 @@ class SystemReader():
         self.ColStype = np.where(tempLine == 'Stype')[0][0]
         self.ColRA = np.where(tempLine == 'RA')[0][0]
         self.ColDec = np.where(tempLine == 'Dec')[0][0]
-        
+
         # Reset the line counter.
         self.Reset()
-        
+
         pass
-    
+
     def Reset(self):
         """
         """
-        
+
         # The third line (i = 2) is the first line that contains planets.
         self.Counter = 2
-        
+
         pass
-    
+
     def Clear(self):
         """
         """
-        
+
         self.Nuniverse = []
         self.Rp = [] # Rearth
         self.Porb = [] # d
@@ -127,9 +127,9 @@ class SystemReader():
         self.Stype = []
         self.RA = [] # deg
         self.Dec = [] # deg
-        
+
         pass
-    
+
     def nextSystem(self):
         """
         Returns
@@ -137,10 +137,10 @@ class SystemReader():
         Sys: instance, None
             Instance of class System.
         """
-        
+
         # Clear the system.
         self.Clear()
-        
+
         # If there is no planet in the system yet or if the current planet
         # belongs to the same universe and the same star, add the current
         # planet to the system.
@@ -182,7 +182,7 @@ class SystemReader():
                 tempLine = self.Lines[self.Counter].split('\t')
             else:
                 break
-        
+
         # Create the system.
         Sys = System.System(self.Nuniverse,
                             self.Rp, # Rearth
@@ -212,8 +212,8 @@ class SystemReader():
                             self.Stype,
                             self.RA, # deg
                             self.Dec) # deg
-        
+
         sys.stdout.write('\r--> Planet %.0f of %.0f' % ((self.Counter-1), self.Nlines-2))
         sys.stdout.flush()
-        
+
         return Sys
