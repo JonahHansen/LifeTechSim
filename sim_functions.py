@@ -162,9 +162,9 @@ def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz):
     #Zodi flux at 1au is 2*local amount*exozodis
     local_scale_factor = 2*local_exozodi*star.Exzod
 
-    solid_angle = (pix2mas*sz/rad2mas)**2
+    solid_angle_pix = (pix2mas/rad2mas)**2
 
-    return np.sum(flux_dist*trans_map*local_scale_factor*solid_angle)
+    return np.sum(flux_dist*trans_map*local_scale_factor*solid_angle_pix)
 
 
 def azimuthal_rms(image,r):
