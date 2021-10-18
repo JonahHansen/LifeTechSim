@@ -1,11 +1,16 @@
 import numpy as np
 from PPop.ReadPlanetPopulation import PlanetPopulation
 from astropy import constants as const
+from scipy.integrate import quad
 
 sigma_sb = const.sigma_sb.value #Stefan-Boltzmann constant
+h = const.h.value #Planck constant
+c = const.c.value #Speed of light
+k_B = const.k_B.value #Boltzmann constant
 au = const.au.value #AU in m
 pc = const.pc.value #parsec in m
 R_sol = const.R_sun.value #Solar radius in m
+R_earth = const.R_earth.value #Earth radii in m
 L_sol = const.L_sun.value #Solar luminosity in W
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
@@ -20,6 +25,19 @@ OUTPUTS:
 def Luminosity(T,R):
     Lum = 4*np.pi*(R*R_sol)**2*sigma_sb*T**4
     return Lum/L_sol
+
+"""
+Planck function
+Return a function for the spectral flux density as a function of wavelength
+INPUTS:
+    T = Temperature of blackbody in K
+OUTPUTS:
+    Planck function as a function of wavelength (photons/m^2/s/m)
+"""
+def Planck(T):
+    def func(lam):
+        return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
+    return func
 
 
 """
@@ -37,7 +55,7 @@ class Star():
                  Mass, # Msun
                  RA, # deg
                  Dec, # deg
-                 flux, #phot/s/m^2
+                 spectrograph, #Class holding spectral info
                  HzMin, #au
                  HzMax, #au
                  z #exozodis
@@ -55,7 +73,9 @@ class Star():
         self.RA = RA #Ra in deg
         self.Dec = Dec #Dec in deg
 
-        self.Flux = flux #Flux in phot/s/m^2
+        flux_function = self.star_flux_func()
+
+        self.Flux = quad(flux_function,spectrograph.wave_min,spectrograph.wave_max)[0] #Flux in phot/s/m^2
 
         self.HZMin = HzMin #Outer? limit on HZ
         self.HZMax = HzMax #Inner? limit on HZ
@@ -73,9 +93,21 @@ class Star():
 
         self.Planets = [] #List of planets associated with the star (multiple universes)
 
+    def star_flux_func(self):
+        #Function to calculate the flux of star at a given wavelength
+        R = self.SRad*R_sol #From solar radii to m
+        d = self.Dist*pc #from parsec to meters
+        p = Planck(self.STeff)
+        const = (R/d)**2
+        def func(lam): #lam in m
+            B = const*p(lam) #photons/m^2/s/m
+            return B
+        return func
+
 
 class Planet():
     def __init__(self,
+                 star,
                  UNumber,
                  SNumber,
                  PNumber,
@@ -97,9 +129,11 @@ class Planet():
                  F, #SEarth
                  f,
                  T, #K
-                 refFlux, #phot/s/m^2
-                 thermFlux #phot/s/m^2
+                 spectrograph
                  ):
+
+
+        self.parent_star = star
 
         self.Name = "U%dS%dP%d"%(UNumber,SNumber,PNumber)
         self.UNumber = UNumber #Universe index
@@ -128,9 +162,42 @@ class Planet():
         self.LamRef = f #Lambertian reflectance
         self.PTemp = T #Planet equilibrium temperature in K
 
-        self.RefFlux = refFlux #Reflective flux from planet in phot/s/m^2
-        self.ThermFlux = thermFlux #Thermal flux from planet in phot/s/m^2
+        reflected = self.reflected_flux_func()
+        thermal = self.thermal_flux_func()
+        total_flux = lambda lam: reflected(lam) + thermal(lam)
 
+        flux_ls = []
+        mean_flux_wave = []
+        for wave in spectrograph.channel_borders:
+            flux_ls.append(quad(total_flux,wave,wave+spectrograph.dlambda)[0])
+
+        self.flux = flux_ls
+        self.flux_wave = spectrograph.channel_centres
+
+
+    def reflected_flux_func(self):
+        #Function to calculate the flux of star at a given wavelength
+        Rs = self.parent_star.SRad*R_sol #From solar radii to m
+        d = self.parent_star.Dist*pc #from parsec to meters
+        Rp = self.PRad*R_earth #From solar radii to m
+        a = self.a*au #From au to m
+        p = Planck(self.parent_star.STeff)
+        const = self.AgeomMIR*self.LamRef*(Rp/d)**2*(Rs/a)**2
+        def func(lam): #lam in m
+            B = const*p(lam) #photons/m^2/s/m
+            return B
+        return func
+
+    def thermal_flux_func(self):
+        #Function to calculate the thermal flux of planet at a given wavelength
+        R = self.PRad*R_earth #From solar radii to m
+        d = self.parent_star.Dist*pc #from parsec to meters
+        p = Planck(self.PTemp)
+        const = (R/d)**2
+        def func(lam): #lam in m
+            B = const*p(lam) #photons/m^2/s/m
+            return B
+        return func
 
 """
 Take star and planet data from PPop and return a list of star/planet datastructures
@@ -143,14 +210,14 @@ OUTPUT:
     ([planets] = Star[i].Planets)
 
 """
-def RetrievePlanetData(planet_path,phot_path):
+def RetrievePlanetData(planet_path,spectrograph):
 
     #Get planet data from PPop
     planet_data = PlanetPopulation(planet_path)
     #Get HZ data
     planet_data.ComputeHZ(Model='MS')
     #Attach photometry
-    planet_data.appendPhotometry(phot_path,"tag")
+    #planet_data.appendPhotometry(phot_path,"tag")
 
     star_list = [] #List of stars
     planet_list = [] #List of planets (for each star)
@@ -168,7 +235,7 @@ def RetrievePlanetData(planet_path,phot_path):
                 planet_data.Ms[0],
                 planet_data.RA[0],
                 planet_data.Dec[0],
-                planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Star.Blackbody")][0],
+                spectrograph,
                 planet_data.HZin[0],
                 planet_data.HZout[0],
                 planet_data.z[0]
@@ -187,21 +254,21 @@ def RetrievePlanetData(planet_path,phot_path):
             star_no = planet_data.Nstar[i] #Next index
 
             #New star data
-            new_star = Star(planet_data.SName[i],
-                            planet_data.Nstar[i],
-                            planet_data.Ds[i],
-                            planet_data.Stype[i],
-                            planet_data.Rs[i],
-                            planet_data.Ts[i],
-                            planet_data.Ms[i],
-                            planet_data.RA[i],
-                            planet_data.Dec[i],
-                            planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Star.Blackbody")][i],
-                            planet_data.HZin[i],
-                            planet_data.HZout[i],
-                            planet_data.z[i]
-                            )
-            star_list.append(new_star)
+            star = Star(planet_data.SName[i],
+                        planet_data.Nstar[i],
+                        planet_data.Ds[i],
+                        planet_data.Stype[i],
+                        planet_data.Rs[i],
+                        planet_data.Ts[i],
+                        planet_data.Ms[i],
+                        planet_data.RA[i],
+                        planet_data.Dec[i],
+                        spectrograph,
+                        planet_data.HZin[i],
+                        planet_data.HZout[i],
+                        planet_data.z[i]
+                        )
+            star_list.append(star)
 
         #If we are in the next universe
         if planet_data.Nuniverse[i] != universe_no:
@@ -209,7 +276,8 @@ def RetrievePlanetData(planet_path,phot_path):
             planet_no = 0 #Reset planet index
 
         #Planet data
-        planet = Planet(planet_data.Nuniverse[i],
+        planet = Planet(star,
+                        planet_data.Nuniverse[i],
                         planet_data.Nstar[i],
                         planet_no,
                         planet_data.Rp[i],
@@ -230,9 +298,7 @@ def RetrievePlanetData(planet_path,phot_path):
                         planet_data.Fp[i],
                         planet_data.fp[i],
                         planet_data.Tp[i],
-                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Planet.Reflected")][i],
-                        planet_data.Phot["tag"]["DATA"][planet_data.Phot["tag"]["HEAD"].index("PPopPhotometry.Planet.Thermal")][i],
-                        )
+                        spectrograph)
 
         planet_list.append(planet)
         planet_no += 1

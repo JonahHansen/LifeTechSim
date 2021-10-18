@@ -14,7 +14,7 @@ def pentagon(baseline):
     return np.array([xs,ys]).T[:-1]
 
 
-def get_nuller_response(baseline,fov,sz,wavelength):
+def get_nuller_response(baseline,fov,sz,base_wavelength):
 
     N = knull.make_nuller_mat5()
 
@@ -25,8 +25,8 @@ def get_nuller_response(baseline,fov,sz,wavelength):
     xy = np.meshgrid(sky_angles, sky_angles, indexing='ij')
 
     #x,y are telescope positions in units of wavelength
-    x = telescope_array[:,0]/wavelength
-    y = telescope_array[:,1]/wavelength
+    x = telescope_array[:,0]/base_wavelength
+    y = telescope_array[:,1]/base_wavelength
 
     #Response is the 5 output electric fields as a function of the position on the sky
     response = np.zeros((5,sz,sz), dtype='complex')
@@ -49,7 +49,7 @@ def get_nuller_response(baseline,fov,sz,wavelength):
 
 
 #Calculate stellar leakage flux through an increased resolution simulation (like exozodiacal light)
-def stellar_leakage(star,baseline,wavelength,sz):
+def stellar_leakage(star,baseline,base_wavelength,sz):
 
     arr = np.arange(sz)-sz/2
     x,y = np.meshgrid(arr,arr)
@@ -61,7 +61,7 @@ def stellar_leakage(star,baseline,wavelength,sz):
     I[np.isnan(I)] = 0
 
     #calculate transmission (field of view has a radius equal to star's angular radius)
-    res, k1, k2 = get_nuller_response(baseline,2*star.angRad,sz,wavelength)
+    res, k1, k2 = get_nuller_response(baseline,2*star.angRad,sz,base_wavelength)
 
     leakage_2nd = np.sum(res[1]*I)
     leakage_4th = np.sum(res[2]*I)
@@ -95,24 +95,24 @@ def Mike_stellar_leakage(star,response,pix2mas):
     return leakage_2nd, leakage_4th
 
 
-def compute(star,mode,filter,sz,scale_factor,local_exozodi):
+def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
     #Define wavelength to fix baseline
-    wavelength = filter.Mean #
+    base_wavelength = spec.baseline_wave #
 
     print("\nCalculating Zodiacal")
 
     #zodiacal power (phot/s) per telescope
-    zodiacal = zodiacal_background(star,filter)
+    zodiacal = zodiacal_background(star,spec)
 
     print("\nCalculating Response")
 
     ls_row_data = []
 
     if mode == 1:
-        baseline = wavelength/2*rad2mas/star.HZAngle
-        fov = wavelength/baseline*scale_factor
-        response, k1, k2 = get_nuller_response(baseline,fov,sz,wavelength)
+        baseline = base_wavelength/2*rad2mas/star.HZAngle
+        fov = base_wavelength/baseline*scale_factor
+        response, k1, k2 = get_nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz
 
 
@@ -125,7 +125,7 @@ def compute(star,mode,filter,sz,scale_factor,local_exozodi):
         print("\nCalculating Leakage")
         """
         #Calc stellar leakage flux (phot/s/m^2) per telescope
-        leakage_2nd,leakage_4th = stellar_leakage(star,baseline,wavelength,sz)
+        leakage_2nd,leakage_4th = stellar_leakage(star,baseline,base_wavelength,sz)
 
         """
         #Calc stellar leakage flux (phot/s/m^2) per telescope
@@ -150,27 +150,35 @@ def compute(star,mode,filter,sz,scale_factor,local_exozodi):
 
     if mode == 2:
         for planet in star.Planets:
-            baseline = wavelength/2*rad2mas/planet.PAngSep
-            fov = wavelength/baseline*scale_factor
-            response, k1, k2 = get_nuller_response(baseline,fov,sz,wavelength)
+            baseline = base_wavelength/2*rad2mas/planet.PAngSep
+            fov = base_wavelength/baseline*scale_factor
+            response, k1, k2 = get_nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz
+
+            print("\nCalculating Exozodiacal")
 
             ave_trans_map = 0.5*(response[1] + response[2])
 
             #exozodiacal flux (phot/s/m^2) per telescope
             exozodiacal = calc_exozodiacal(star,ave_trans_map,local_exozodi,pix2mas,sz)
 
+            print("\nCalculating Leakage")
             #Calc stellar leakage flux (phot/s/m^2) per telescope
-            leakage_2nd,leakage_4th = stellar_leakage(star,baseline,wavelength,sz)
+            leakage_2nd,leakage_4th = stellar_leakage(star,baseline,base_wavelength,sz)
 
             """
             #Calc stellar leakage flux (phot/s/m^2) per telescope
             leakage_2nd,leakage_4th = Mike_stellar_leakage(star,response,pix2mas)
             """
 
+            #pix2mas conversion, removing wavelength dependence
+            #multiply by wavelength to get conversion factor for that wavelength
+            wave_pix2mas = pix2mas/base_wavelength
+
+            print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per telescope
-            signal_k1 = calc_planet_signal(k1,planet,pix2mas)
-            signal_k2 = calc_planet_signal(k2,planet,pix2mas)
+            signal_k1 = calc_planet_signal(k1,planet,wave_pix2mas)
+            signal_k2 = calc_planet_signal(k2,planet,wave_pix2mas)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,

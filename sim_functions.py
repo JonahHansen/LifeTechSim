@@ -8,6 +8,25 @@ au = const.au.value #AU in m
 pc = const.pc.value #parsec in m
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
+#Initiate units in um. Attributes in m
+class Spectrograph():
+    def __init__(self, mean_wave, bandwidth, baseline_wave, n_channels):
+
+        self.bandwidth = bandwidth*1e-6
+        self.mean = mean_wave*1e-6
+        self.wave_min = self.mean - self.bandwidth/2
+        self.wave_max = self.mean + self.bandwidth/2
+
+        self.baseline_wave = baseline_wave*1e-6
+
+        self.channel_borders = np.linspace(self.wave_min,self.wave_max,n_channels+1)[:-1]
+        self.dlambda = self.channel_borders[1]-self.channel_borders[0]
+        self.channel_centres = (self.channel_borders + self.dlambda/2)
+
+        self.eff_resolution = self.mean/self.dlambda
+
+
+
 def limb_darkening(r):
     mu = np.sqrt(1-r**2)
     return 1-0.47*(1-mu)-0.23*(1-mu)**2
@@ -34,7 +53,7 @@ def get_SNR(signal,leakage,zodiacal,N,area,exp_time,eta):
 
 
 #Calculate zodiacal background in phot/s (no collecting area dependence)
-def zodiacal_background(star,filter):
+def zodiacal_background(star,spec):
 
     #Get JWST background
     bg = jbt.background(star.RA, star.Dec, 10)
@@ -48,15 +67,13 @@ def zodiacal_background(star,filter):
     zodi_data = bg.bkg_data['zodi_bg'][index]*1e6*1e-26 #W/m^2/Hz/sr
     waves = bg.bkg_data['wave_array']*1e-6 #m
 
-    #Interpolate the filter and the zodiacal background
-    f_filter = interp1d(filter.Wavel,filter.Trans)
+    #Interpolate the zodiacal background onto the spectrograph grid
+    filter_waves = np.linspace(spec.wave_min,spec.wave_max,2000)
+
     f_zodi = interp1d(waves,zodi_data)
 
-    #Common wavelengths
-    common_waves = np.linspace(filter.Wavel[0],filter.Wavel[-1],1000)
-
     #multiply by filter transmission
-    zodi_radiance_hz = f_filter(common_waves)*f_zodi(common_waves) #W/m^2/Hz/sr
+    zodi_radiance_hz = f_zodi(filter_waves) #W/m^2/Hz/sr
 
     #Convert to photons/s/m:
     # a) to wavelengths by multiplying by c/lam^2
@@ -64,25 +81,29 @@ def zodiacal_background(star,filter):
     # c) solid angle dependence: Omega \propto lam^2/Area
     # d) thus multiplying by Omega*Area = lam^2 removes solid angle and area dependence
     # Putting it together:
-    zodi_spec_power = zodi_radiance_hz*common_waves/h #phot/s/m
+    zodi_spec_power = zodi_radiance_hz*filter_waves/h #phot/s/m
 
     #Sum over wavelength => Resultant power
-    zodi_power = np.trapz(zodi_spec_power,common_waves) #phot/s
+    zodi_power = np.trapz(zodi_spec_power,filter_waves) #phot/s
 
     return zodi_power
 
 
 #Calculate planet signal flux (phot/s/m^2)
-def calc_planet_signal(trans_map,planet,pix2mas):
+def calc_planet_signal(trans_map,planet,wave_pix2mas):
 
-    planet_pos = planet.PAngSep/pix2mas #in pixels
-    p_trans = azimuthal_rms(trans_map,planet_pos)
+    total = 0
+    for flux,wave in zip(planet.flux,planet.flux_wave):
+        planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
+        p_trans = azimuthal_rms(trans_map,planet_pos)
+        p_flux = p_trans*flux
+        total += p_flux
 
-    return p_trans*(planet.RefFlux + planet.ThermFlux)
+    return total
 
 
 #Caclulate the local zodiacal radiance (photons/s/m^2/sr) along the zodiacal axis of symmetry
-def calc_local_zodiacal_minimum(filter):
+def calc_local_zodiacal_minimum(spec):
 
         #Ecliptic pole coordinates:
         ra = 270
@@ -98,24 +119,23 @@ def calc_local_zodiacal_minimum(filter):
         zodi_data = bg.bkg_data['zodi_bg'][index]*1e6*1e-26 #W/m^2/Hz/sr
         waves = bg.bkg_data['wave_array']*1e-6 #m
 
-        #Interpolate the filter and the zodiacal background
-        f_filter = interp1d(filter.Wavel,filter.Trans)
+        #Interpolate the zodiacal background onto the spectrograph grid
+        filter_waves = np.linspace(spec.wave_min,spec.wave_max,2000)
+
         f_zodi = interp1d(waves,zodi_data)
 
-        #Common wavelengths
-        common_waves = np.linspace(filter.Wavel[0],filter.Wavel[-1],1000)
-
         #multiply by filter transmission
-        zodi_radiance_hz = f_filter(common_waves)*f_zodi(common_waves) #W/m^2/Hz/sr
+        zodi_radiance_hz = f_zodi(filter_waves) #W/m^2/Hz/sr
+
 
         #Convert to photons/s/m^2/m/sr:
         # a) to wavelengths by multiplying by c/lam^2
         # b) to photons by dividing through by hc/lam
         # Putting it together:
-        zodi_spec_rad = zodi_radiance_hz/(common_waves*h) #photons/s/m^2/m/sr
+        zodi_spec_rad = zodi_radiance_hz/(filter_waves*h) #photons/s/m^2/m/sr
 
         #Sum over wavelength => Resultant power
-        zodi_rad = np.trapz(zodi_spec_rad,common_waves) #photons/s/m^2/sr
+        zodi_rad = np.trapz(zodi_spec_rad,filter_waves) #photons/s/m^2/sr
 
         return zodi_rad
 
@@ -143,8 +163,6 @@ def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz):
     local_scale_factor = 2*local_exozodi*star.Exzod
 
     solid_angle = (pix2mas*sz/rad2mas)**2
-
-    import pdb; pdb.set_trace()
 
     return np.sum(flux_dist*trans_map*local_scale_factor*solid_angle)
 
