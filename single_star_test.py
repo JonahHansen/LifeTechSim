@@ -7,7 +7,7 @@ from planet_retrieval import RetrievePlanetData as RPD
 #Main parameters
 sz = 400
 fov_scale_factor = 3
-mode = 1
+mode = 2
 
 first_run = False
 

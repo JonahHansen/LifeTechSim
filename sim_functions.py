@@ -168,10 +168,16 @@ def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz):
 
 
 def azimuthal_rms(image,r):
+
     n_angles = 10000
     angles = np.linspace(0,2*np.pi,n_angles)
 
     centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
     sum = 0
     for theta in angles:
         x = centre[0] + r*np.cos(theta)

@@ -151,7 +151,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
             signal_k2 = calc_planet_signal(k2,planet,wave_pix2mas)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
-                        "star_no":star.SNumber,"planet_no":planet.PNumber,
+                        "star_no":star.SNumber,"planet_no":planet.PNumber, "baseline":baseline,
+                        "array_angle":star.HZAngle, "planet_angle":planet.PAngSep,
                         "signal_k1":signal_k1,"leakage_2nd":leakage_2nd,
                         "signal_k2":signal_k2,"leakage_4th":leakage_4th,
                         "zodiacal":zodiacal,"exozodiacal":exozodiacal}
@@ -193,7 +194,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
             signal_k2 = calc_planet_signal(k2,planet,wave_pix2mas)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
-                        "star_no":star.SNumber,"planet_no":planet.PNumber,
+                        "star_no":star.SNumber,"planet_no":planet.PNumber,"baseline":baseline,
+                        "array_angle":star.PAngSep, "planet_angle":planet.PAngSep,
                         "signal_k1":signal_k1,"leakage_2nd":leakage_2nd,
                         "signal_k2":signal_k2,"leakage_4th":leakage_4th,
                         "zodiacal":zodiacal,"exozodiacal":exozodiacal}
