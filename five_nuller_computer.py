@@ -118,7 +118,8 @@ def compute(star,mode,filter,sz,scale_factor,local_exozodi):
 
         print("\nCalculating Exozodiacal")
         #exozodiacal flux (phot/s/m^2) per telescope
-        exozodiacal = calc_exozodiacal(star,response[1],response[2],local_exozodi,pix2mas,sz)
+        ave_trans_map = 0.5*(response[1] + response[2])
+        exozodiacal = calc_exozodiacal(star,ave_trans_map,local_exozodi,pix2mas,sz)
 
 
         print("\nCalculating Leakage")
@@ -154,8 +155,10 @@ def compute(star,mode,filter,sz,scale_factor,local_exozodi):
             response, k1, k2 = get_nuller_response(baseline,fov,sz,wavelength)
             pix2mas = fov*rad2mas/sz
 
+            ave_trans_map = 0.5*(response[1] + response[2])
+
             #exozodiacal flux (phot/s/m^2) per telescope
-            exozodiacal = calc_exozodiacal(star,response[1],response[2],local_exozodi,pix2mas,sz)
+            exozodiacal = calc_exozodiacal(star,ave_trans_map,local_exozodi,pix2mas,sz)
 
             #Calc stellar leakage flux (phot/s/m^2) per telescope
             leakage_2nd,leakage_4th = stellar_leakage(star,baseline,wavelength,sz)

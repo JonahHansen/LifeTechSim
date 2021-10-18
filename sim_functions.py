@@ -122,7 +122,7 @@ def calc_local_zodiacal_minimum(filter):
 
 #Calc the exozodiacal flux (photons/s/m^2)
 #Essentially sums over solid angle.
-def calc_exozodiacal(star,r1,r2,local_exozodi,pix2mas,sz):
+def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz):
 
     arr = np.arange(sz)-sz/2
     x,y = np.meshgrid(arr,arr)
@@ -138,8 +138,6 @@ def calc_exozodiacal(star,r1,r2,local_exozodi,pix2mas,sz):
                                [0, lambda x: (x-r_in)/(r_out-r_in), 1])
     flux_dist = lambda_r*r**(-2.3)
     flux_dist[int(sz/2),int(sz/2)] = 0
-
-    trans_map = (r1 + r2)/2
 
     #Zodi flux at 1au is 2*local amount*exozodis
     local_scale_factor = 2*local_exozodi*star.Exzod
