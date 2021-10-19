@@ -5,9 +5,13 @@ from engine.planet_retrieval import RetrievePlanetData as RPD
 from itertools import chain
 from multiprocessing import Pool
 import json
+import sys
+
+if len(sys.argv) != 5:
+    raise Exception("Wrong number of arguments")
 
 #####################################################
-#Main parameters
+#Main parameters, passed as commandline arguments
 
 """
 Architecture
@@ -23,13 +27,11 @@ Mode
 
 Base_wave = wavelength to base the optimisation on
 """
-architecture = 5
-mode = 1
-base_wave = 15 #microns
+architecture = int(sys.argv[1])
+mode = int(sys.argv[2])
+base_wave = float(sys.argv[3]) #microns
+out_file = str(sys.argv[4])
 
-out_file = "test_run.json"
-
-number_processes = 2
 
 #####################################################
 #Secondary parameters
@@ -42,6 +44,7 @@ planet_path = "PPop/TestPlanetPopulation2.txt"
 
 first_run = False
 
+number_processes = 2
 #####################################################
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)

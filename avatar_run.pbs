@@ -1,0 +1,16 @@
+##### Select resources #####
+#PBS -N JHansen LIFESim
+#PBS -l ncpus=10
+
+##### Queue #####
+#PBS -q smallmem
+
+##### Mail Options #####
+# Send an email at job start, end and if aborted
+#PBS -m abe
+
+##### Change to your working directory #####
+cd /avatar/jhansen/LifeTechSim
+
+##### Execute Program #####
+python main_sim.py 5 1 15 avatar_test.json 
