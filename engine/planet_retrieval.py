@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 import numpy as np
 from PPop.ReadPlanetPopulation import PlanetPopulation
 from astropy import constants as const
@@ -73,9 +75,14 @@ class Star():
         self.RA = RA #Ra in deg
         self.Dec = Dec #Dec in deg
 
+        #Function for the stellar flux as a function of wavelength
         flux_function = self.star_flux_func()
 
-        self.Flux = quad(flux_function,spectrograph.wave_min,spectrograph.wave_max)[0] #Flux in phot/s/m^2
+        #Integrate over channels
+        flux_ls = []
+        for wave in spectrograph.channel_borders:
+            flux_ls.append(quad(flux_function,wave,wave+spectrograph.dlambda)[0])
+        self.flux = np.array(flux_ls)
 
         self.HZMin = HzMin #Outer? limit on HZ
         self.HZMax = HzMax #Inner? limit on HZ
@@ -132,7 +139,6 @@ class Planet():
                  spectrograph
                  ):
 
-
         self.parent_star = star
 
         self.Name = "U%dS%dP%d"%(UNumber,SNumber,PNumber)
@@ -162,19 +168,18 @@ class Planet():
         self.LamRef = f #Lambertian reflectance
         self.PTemp = T #Planet equilibrium temperature in K
 
+        #Functions to get total planet flux as a function of wavelength
         reflected = self.reflected_flux_func()
         thermal = self.thermal_flux_func()
         total_flux = lambda lam: reflected(lam) + thermal(lam)
 
+        #Integrate over wavelength
         flux_ls = []
-        mean_flux_wave = []
         for wave in spectrograph.channel_borders:
             flux_ls.append(quad(total_flux,wave,wave+spectrograph.dlambda)[0])
+        self.flux = np.array(flux_ls)
 
-        self.flux = flux_ls
-        self.flux_wave = spectrograph.channel_centres
-
-
+    #SEE PPOPPHOTOMETRY FOR THESE TWO FUNCTIONS
     def reflected_flux_func(self):
         #Function to calculate the flux of star at a given wavelength
         Rs = self.parent_star.SRad*R_sol #From solar radii to m
