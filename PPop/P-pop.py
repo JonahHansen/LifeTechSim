@@ -104,8 +104,8 @@ block = False
 
 # Select a name for the output planet population table and how many universes
 # should be simulated.
-Name = 'TestPlanetPopulation2' # str
-Nuniverses = 2 # int
+Name = 'LifeTechSimPlanetPopulation' # str
+Nuniverses = 10 # int
 
 
 # =============================================================================
