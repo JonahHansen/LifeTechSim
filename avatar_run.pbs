@@ -1,6 +1,6 @@
 ##### Select resources #####
 #PBS -N JHansen LIFESim
-#PBS -l ncpus=10
+#PBS -l ncpus=28
 
 ##### Queue #####
 #PBS -q smallmem
@@ -13,4 +13,5 @@
 cd /avatar/jhansen/LifeTechSim
 
 ##### Execute Program #####
-python main_sim.py 5 1 15 avatar_test.json 
+source ../pyenv/bin/activate
+python main_sim.py 5 1 15 avatar_test.json

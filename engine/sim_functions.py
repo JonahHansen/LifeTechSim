@@ -39,6 +39,27 @@ class Spectrograph():
         self.eff_resolution = self.mean/self.dlambda
 
 
+
+
+"""
+Planck function
+Return a function for the spectral flux density as a function of wavelength
+INPUTS:
+    T = Temperature of blackbody in K
+OUTPUTS:
+    Planck function as a function of wavelength (photons/m^2/s/m)
+"""
+#Planck function as a function of temperature and wavelength
+def Planck(T,lam):
+    return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
+
+
+def Planck_wrapper(T):
+    def func(lam):
+        return Planck(T,lam)
+    return func
+
+
 #Limb darkening as a function of the fraction of stellar radius (1 = stellar radius)
 def limb_darkening(r):
     mu = np.sqrt(1-r**2)
@@ -141,11 +162,6 @@ def calc_local_zodiacal_minimum(spec):
             zodi_rad.append(np.trapz(rad_split,wave_split)) #photons/s/m^2/sr
 
         return np.array(zodi_rad)
-
-
-#Planck function as a function of temperature and wavelength
-def Planck(T,lam):
-    return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
 
 
 #Calc the exozodiacal flux (photons/s/m^2)

@@ -2,6 +2,7 @@ import sys
 sys.path.append("..")
 import numpy as np
 from PPop.ReadPlanetPopulation import PlanetPopulation
+from engine.sim_functions import Planck_wrapper
 from astropy import constants as const
 from scipy.integrate import quad
 
@@ -27,19 +28,6 @@ OUTPUTS:
 def Luminosity(T,R):
     Lum = 4*np.pi*(R*R_sol)**2*sigma_sb*T**4
     return Lum/L_sol
-
-"""
-Planck function
-Return a function for the spectral flux density as a function of wavelength
-INPUTS:
-    T = Temperature of blackbody in K
-OUTPUTS:
-    Planck function as a function of wavelength (photons/m^2/s/m)
-"""
-def Planck(T):
-    def func(lam):
-        return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
-    return func
 
 
 """
@@ -104,7 +92,7 @@ class Star():
         #Function to calculate the flux of star at a given wavelength
         R = self.SRad*R_sol #From solar radii to m
         d = self.Dist*pc #from parsec to meters
-        p = Planck(self.STeff)
+        p = Planck_wrapper(self.STeff)
         const = (R/d)**2
         def func(lam): #lam in m
             B = const*p(lam) #photons/m^2/s/m
@@ -186,7 +174,7 @@ class Planet():
         d = self.parent_star.Dist*pc #from parsec to meters
         Rp = self.PRad*R_earth #From solar radii to m
         a = self.a*au #From au to m
-        p = Planck(self.parent_star.STeff)
+        p = Planck_wrapper(self.parent_star.STeff)
         const = self.AgeomMIR*self.LamRef*(Rp/d)**2*(Rs/a)**2
         def func(lam): #lam in m
             B = const*p(lam) #photons/m^2/s/m
@@ -197,7 +185,7 @@ class Planet():
         #Function to calculate the thermal flux of planet at a given wavelength
         R = self.PRad*R_earth #From solar radii to m
         d = self.parent_star.Dist*pc #from parsec to meters
-        p = Planck(self.PTemp)
+        p = Planck_wrapper(self.PTemp)
         const = (R/d)**2
         def func(lam): #lam in m
             B = const*p(lam) #photons/m^2/s/m

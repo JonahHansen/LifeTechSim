@@ -2,18 +2,18 @@ import sys
 sys.path.append("..")
 import numpy as np
 from astropy import constants as const
-from engine.sim_functions import limb_darkening, zodiacal_background, calc_exozodiacal, calc_planet_signal
+import engine.sim_functions as sf
 from opticstools import knull
 from opticstools.opticstools import azimuthalAverage
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 #The baseline given to this function is the one that defines the "optimised" transmission map
-#At the moment, it is optimized for the shorter baselines (adjacent ones), which in turn optimises for k1
+#At the moment, it is optimized for the longer baselines (diagonal ones), which in turn optimises for k1?????
 def pentagon(baseline):
     angles = np.linspace(0,2*np.pi,6)
-    xs = 1.176*baseline*np.sin(angles)
-    ys = 1.176*baseline*np.cos(angles)
+    xs = 1/1.90211*2.08*baseline*np.sin(angles)
+    ys = 1/1.90211*2.08*baseline*np.cos(angles)
     return np.array([xs,ys]).T[:-1]
 
 
@@ -65,7 +65,7 @@ def stellar_leakage(star,baseline,base_wavelength):
     pixel_size = r[100,100] - r[100,99]
 
     #Limb_darkening, normalised over the total area
-    I = limb_darkening(r)#
+    I = sf.limb_darkening(r)#
     I[np.isnan(I)] = 0
     I/=np.sum(I)
 
@@ -96,7 +96,7 @@ def Mike_stellar_leakage(star,response,pix2mas):
     fourth_order_coeff = np.median(y4[1:16]/r_ix[1:16]**4)/pix2mas**4
 
     r = np.linspace(0,1,200)
-    I = limb_darkening(r)
+    I = sf.limb_darkening(r)
 
     #Total leakage is an integral of coeff multiplied by r^2 or r^4 and limb darkening intensity
     mn_r2 = (np.trapz(I*r**3, r)/np.trapz(I*r, r))**.5
@@ -117,7 +117,7 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
     print("\nCalculating Zodiacal")
 
     #zodiacal power (phot/s) per telescope
-    zodiacal = zodiacal_background(star,spec)
+    zodiacal = sf.zodiacal_background(star,spec)
 
     print("\nCalculating Response")
 
@@ -131,8 +131,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
         print("\nCalculating Exozodiacal")
         #exozodiacal flux (phot/s/m^2) per telescope
-        exozodiacal_1 = calc_exozodiacal(star,response[1],local_exozodi,pix2mas,sz,spec)
-        exozodiacal_2 = calc_exozodiacal(star,response[2],local_exozodi,pix2mas,sz,spec)
+        exozodiacal_1 = sf.calc_exozodiacal(star,response[1],local_exozodi,pix2mas,sz,spec)
+        exozodiacal_2 = sf.calc_exozodiacal(star,response[2],local_exozodi,pix2mas,sz,spec)
 
         print("\nCalculating Leakage")
         #Calc stellar leakage flux (phot/s/m^2) per telescope
@@ -151,8 +151,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
             print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per telescope
-            signal_k1 = calc_planet_signal(k1,planet,wave_pix2mas,spec,mode)
-            signal_k2 = calc_planet_signal(k2,planet,wave_pix2mas,spec,mode)
+            signal_k1 = sf.calc_planet_signal(k1,planet,wave_pix2mas,spec,mode)
+            signal_k2 = sf.calc_planet_signal(k2,planet,wave_pix2mas,spec,mode)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,"baseline (m)":baseline,
@@ -175,8 +175,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
             print("\nCalculating Exozodiacal")
             #exozodiacal flux (phot/s/m^2) per telescope
-            exozodiacal_1 = calc_exozodiacal(star,response[1],local_exozodi,pix2mas,sz,spec)
-            exozodiacal_2 = calc_exozodiacal(star,response[2],local_exozodi,pix2mas,sz,spec)
+            exozodiacal_1 = sf.calc_exozodiacal(star,response[1],local_exozodi,pix2mas,sz,spec)
+            exozodiacal_2 = sf.calc_exozodiacal(star,response[2],local_exozodi,pix2mas,sz,spec)
 
             print("\nCalculating Leakage")
             #Calc stellar leakage flux (phot/s/m^2) per telescope
@@ -192,8 +192,8 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
             print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per telescope
-            signal_k1 = calc_planet_signal(k1,planet,wave_pix2mas,spec,mode)
-            signal_k2 = calc_planet_signal(k2,planet,wave_pix2mas,spec,mode)
+            signal_k1 = sf.calc_planet_signal(k1,planet,wave_pix2mas,spec,mode)
+            signal_k2 = sf.calc_planet_signal(k2,planet,wave_pix2mas,spec,mode)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,"baseline (m)":baseline,

@@ -44,7 +44,7 @@ planet_path = "PPop/TestPlanetPopulation2.txt"
 
 first_run = False
 
-number_processes = 2
+number_processes = 28
 #####################################################
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
