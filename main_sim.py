@@ -42,7 +42,7 @@ num_channels = 10
 
 planet_path = "PPop/LifeTechSimPlanetPopulation.txt"
 
-first_run = False
+first_run = True
 
 number_processes = 28
 #####################################################
@@ -104,7 +104,7 @@ def worker_func(star):
 
 pool = Pool(processes=number_processes)
 
-ls_star_data = pool.map(worker_func,star_list[:2])
+ls_star_data = pool.map(worker_func,star_list)
 
 pool.close()
 
