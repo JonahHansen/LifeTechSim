@@ -65,6 +65,18 @@ def limb_darkening(r):
     mu = np.sqrt(1-r**2)
     return 1-0.47*(1-mu)-0.23*(1-mu)**2
 
+#How many multiples do I need of the baseline to keep the baseline between 10 and 600m
+def baseline_checker(baseline):
+    if baseline > 600:
+        return 600, 0
+    elif baseline >= 10:
+        return baseline, 1
+    else:
+        n = 1
+        while baseline < 10:
+            n += 1
+            baseline *= (2*n-1)
+        return baseline, n
 
 #Calculate zodiacal background in phot/s (no collecting area dependence)
 def zodiacal_background(star,spec):
@@ -200,7 +212,16 @@ def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz,spec):
         local_scale_factor = 2*local_exozodi[i]*star.Exzod
 
         #Normalised planck distribution (i.e radiance)
-        planck_dist = Planck(temp_dist,spec.channel_centres[i])/Planck(300,spec.channel_centres[i])
+        wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,50)
+
+        planck_arr = []
+        planck_norm = []
+        for lam in wavelength_sample:
+            planck_arr.append(Planck(temp_dist,lam))
+            planck_norm.append(Planck(300,lam))
+
+        planck_dist = np.trapz(np.array(planck_arr),wavelength_sample,axis=0)/np.trapz(np.array(planck_norm),wavelength_sample)
+
         flux_dist = column_density*planck_dist
 
         exozodi.append(np.sum(flux_dist*trans_map*local_scale_factor*solid_angle_pix))

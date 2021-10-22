@@ -117,6 +117,7 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
     if mode == 1:
         baseline = base_wavelength/2*rad2mas/star.HZAngle
+        baseline, integer_wavelengths = sf.baseline_checker(baseline)
         fov = base_wavelength/baseline*scale_factor
         response, k = get_nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz
@@ -146,6 +147,7 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,"baseline (m)":baseline,
+                        "integer_wavelengths":integer_wavelengths,
                         "array_angle (mas)":star.HZAngle, "planet_angle (mas)":planet.PAngSep, "star_type":star.Stype,
                         "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
                         "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,
@@ -158,6 +160,7 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
     if mode == 2:
         for planet in star.Planets:
             baseline = base_wavelength/2*rad2mas/planet.PAngSep
+            baseline, integer_wavelengths = sf.baseline_checker(baseline)
             fov = base_wavelength/baseline*scale_factor
             response, k = get_nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz
@@ -184,6 +187,7 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name, "universe_no":planet.UNumber,
                         "star_no":star.SNumber,"planet_no":planet.PNumber,"baseline (m)":baseline,
+                        "integer_wavelengths":integer_wavelengths,
                         "array_angle (mas)":planet.PAngSep, "planet_angle (mas)":planet.PAngSep, "star_type":star.Stype,
                         "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
                         "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,

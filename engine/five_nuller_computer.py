@@ -125,6 +125,9 @@ def compute(star,mode,spec,sz,scale_factor,local_exozodi):
 
     if mode == 1:
         baseline = base_wavelength/2*rad2mas/star.HZAngle
+
+        #INSERT BASELINE CHECKER BASED ON OPTIMISATION?
+
         fov = base_wavelength/baseline*scale_factor
         response, k1, k2 = get_nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz

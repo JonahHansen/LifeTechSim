@@ -175,7 +175,7 @@ class Planet():
         Rp = self.PRad*R_earth #From solar radii to m
         a = self.a*au #From au to m
         p = Planck_wrapper(self.parent_star.STeff)
-        const = self.AgeomMIR*self.LamRef*(Rp/d)**2*(Rs/a)**2
+        const = self.AgeomMIR*self.LamRef*(Rs/d)**2*(Rp/a)**2
         def func(lam): #lam in m
             B = const*p(lam) #photons/m^2/s/m
             return B
