@@ -5,7 +5,7 @@ from opticstools import knull
 
 baseline = 80 #m
 wavelength = 14e-6 #m
-scale_factor = 1.3
+scale_factor = 1.2
 sz = 400
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
@@ -15,8 +15,9 @@ L = 0.2 #Lsol
 Dist = 10.65 #Pc
 
 HZAngle = np.sqrt(L)*1000/Dist
-baseline = wavelength/2*rad2mas/HZAngle
-pix2mas = wavelength/baseline*rad2mas*scale_factor/sz
+baseline = wavelength*rad2mas/HZAngle
+fov = 2*scale_factor*HZAngle/rad2mas
+pix2mas = fov*rad2mas/sz
 
 
 def azimuthal_rms(image,r):
@@ -44,8 +45,8 @@ def pentagon(baseline):
 
 def pentagon2(baseline):
     angles = np.linspace(0,2*np.pi,6)
-    xs = 1/1.17557*2.08*baseline*np.sin(angles)
-    ys = 1/1.17557*2.08*baseline*np.cos(angles)
+    xs = 1/1.17557*baseline*np.sin(angles)
+    ys = 1/1.17557*baseline*np.cos(angles)
     return np.array([xs,ys]).T[:-1]
 
 def triangle(baseline):
@@ -61,7 +62,6 @@ def get_nuller_response():
 
     telescope_array = pentagon2(baseline)
 
-    fov = wavelength/baseline*scale_factor #?????
     sky_angles = np.linspace(-fov/2,fov/2,sz)
 
     xy = np.meshgrid(sky_angles, sky_angles, indexing='ij')
@@ -84,8 +84,8 @@ def get_nuller_response():
 
     #Create the kernel nulls. This is turning the output intensities into the kernel nulls (K in 2018 paper)
 
-    k1 = response[2]-response[3]
-    k2 = response[1]-response[4]
+    k1 = response[1]-response[4]
+    k2 = response[2]-response[3]
 
     return response, k1, k2 #return intensity per telescope
 
@@ -125,7 +125,7 @@ def get_nuller_response_tri():
 
 r,k1,k2 = get_nuller_response()
 
-rs = np.linspace(0.01,199)
+rs = np.linspace(100,199,100)
 k1_ave = []
 k2_ave = []
 
@@ -138,9 +138,9 @@ plt.imshow(k1)
 plt.figure(2)
 plt.imshow(k2)
 plt.figure(3)
-plt.plot(rs*pix2mas,k1_ave,label="k1")
-plt.plot(rs*pix2mas,k2_ave,label="k2")
-plt.axvline(x=HZAngle,color="k")
+plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,k1_ave,label="k1")
+plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,k2_ave,label="k2")
+#plt.axvline(x=HZAngle,color="k")
 plt.legend()
 plt.xlabel("Radial coordinate (mas)")
 plt.ylabel("Transmission")

@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 from engine.sim_functions import calc_local_zodiacal_minimum,Spectrograph
 from engine.planet_retrieval import RetrievePlanetData as RPD
+from engine.main_computer import compute
 from itertools import chain
 from multiprocessing import Pool
 import json
@@ -16,7 +17,7 @@ if len(sys.argv) != 5:
 """
 Architecture
  1 = Bracewell
- 2 = Emma Xarray
+ 2 = Linear nuller
  3 = Three way kernel nuller
  4 = Four way kernel nuller
  5 = Five way kernel nuller
@@ -51,24 +52,31 @@ spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 
 #Set architecture
 if architecture == 1:
-    from engine.bracewell_computer import compute
+    from engine.nullers.bracewell import get_nuller_response
     architecture_verbose = "Bracewell four telescope nuller"
 
 elif architecture == 2:
-    from engine.emma_xarray_computer import compute
-    architecture_verbose = "Emma-Xarray four telescope nuller"
+    from engine.nullers.linear import get_nuller_response
+    architecture_verbose = "Linear four telescope nuller"
 
 elif architecture == 3:
-    from engine.three_nuller_computer import compute
+    from engine.nullers.three_telescopes import get_nuller_response
     architecture_verbose = "Three telescope kernel nuller"
+    base_scale_factor = 0.5
 
 elif architecture == 4:
-    from engine.four_nuller_computer import compute
+    from engine.nullers.four_telescopes import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller"
 
-elif architecture == 5:
-    from engine.five_nuller_computer import compute
-    architecture_verbose = "Five telescope kernel nuller"
+elif architecture == 5.1:
+    from engine.nullers.five_telescopes import get_nuller_response
+    architecture_verbose = "Five telescope kernel nuller, optimised for adjacent telescopes (K1)"
+    base_scale_factor = 1.028
+
+elif architecture == 5.2:
+    from engine.nullers.five_telescopes import get_nuller_response
+    architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
+    base_scale_factor = 0.66 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
 #Set modes
 if mode == 1:
@@ -100,7 +108,7 @@ local_exozodi = calc_local_zodiacal_minimum(spec)
 #RUN!!
 
 def worker_func(star):
-    return compute(star,mode,spec,sz,fov_scale_factor,local_exozodi)
+    return compute(star,mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
 
 pool = Pool(processes=number_processes)
 

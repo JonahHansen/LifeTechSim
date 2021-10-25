@@ -4,47 +4,28 @@ import numpy as np
 filename = "avatar_test.json"
 
 
-def SNR(signal,leakage,zodiacal,exozodiacal):
+def SNR(signal,shot,leakage,zodiacal,exozodiacal):
     sig = signal
-    noise = 2*signal + 2*leakage + zodiacal + exozodiacal
+    noise = 2*shot + 2*leakage + 2*zodiacal + 2*exozodiacal
     return sig/np.sqrt(noise)
 
+def SNR_collapse(SNR_array):
+    return np.sqrt(np.sum(SNR_array**2))
 
-def grab_SNR_per_telescope(dict,D,t,eta):
+def grab_SNR_per_kernel(dict,D,t,eta):
 
     A = np.pi*D**2/4
 
-    signal_k1 = np.array(dict["signal_k1 (ph/s/m2)"])*A*t*eta
-    leakage_1 = np.array(dict["leakage_1 (ph/s/m2)"])*A*t*eta
-    exozodiacal_1 = np.array(dict["exozodiacal_1 (ph/s/m2)"])*A*t*eta
-    signal_k2 = np.array(dict["signal_k2 (ph/s/m2)"])*A*t*eta
-    leakage_2 = np.array(dict["leakage_2 (ph/s/m2)"])*A*t*eta
-    exozodiacal_2 = np.array(dict["exozodiacal_2 (ph/s/m2)"])*A*t*eta
+    signal = np.array(dict["signal (ph/s/m2)"])*A*t*eta
+    shot = np.array(dict["shot (ph/s/m2)"])*A*t*eta
+    leakage = np.array(dict["leakage (ph/s/m2)"])*A*t*eta
+    exozodiacal = np.array(dict["exozodiacal (ph/s/m2)"])*A*t*eta
     zodiacal = np.array(dict["zodiacal (ph/s)"])*t*eta
 
-    snr_1 = SNR(signal_k1,leakage_1,zodiacal,exozodiacal_1)
-    snr_2 = SNR(signal_k2,leakage_2,zodiacal,exozodiacal_2)
+    return SNR(signal, shot, leakage, zodiacal, exozodiacal)
 
-    return snr_1,snr_2
-
-def grab_SNR_total(dict,N,D,t,eta):
-    A = N*np.pi*D**2/4
-
-    signal_k1 = np.array(dict["signal_k1 (ph/s/m2)"])*A*t*eta
-    leakage_1 = np.array(dict["leakage_1 (ph/s/m2)"])*A*t*eta
-    exozodiacal_1 = np.array(dict["exozodiacal_1 (ph/s/m2)"])*A*t*eta
-    signal_k2 = np.array(dict["signal_k2 (ph/s/m2)"])*A*t*eta
-    leakage_2 = np.array(dict["leakage_2 (ph/s/m2)"])*A*t*eta
-    exozodiacal_2 = np.array(dict["exozodiacal_2 (ph/s/m2)"])*A*t*eta
-    zodiacal = np.array(dict["zodiacal (ph/s)"])*t*eta
-
-    snr_1 = SNR(signal_k1,leakage_1,zodiacal,exozodiacal_1)
-    snr_2 = SNR(signal_k2,leakage_2,zodiacal,exozodiacal_2)
-
-    return snr_1, snr_2
-
-def SNR_collapse_wavelengths(snr_array):
-    return np.sqrt(np.sum(snr_array**2))
+def total_SNR(SNR_array):
+    return SNR_collapse(np.flatten(SNR_array))
 
 fin = open(filename,"r")
 

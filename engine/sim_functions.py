@@ -39,8 +39,6 @@ class Spectrograph():
         self.eff_resolution = self.mean/self.dlambda
 
 
-
-
 """
 Planck function
 Return a function for the spectral flux density as a function of wavelength
@@ -65,18 +63,82 @@ def limb_darkening(r):
     mu = np.sqrt(1-r**2)
     return 1-0.47*(1-mu)-0.23*(1-mu)**2
 
-#How many multiples do I need of the baseline to keep the baseline between 10 and 600m
-def baseline_checker(baseline):
-    if baseline > 600:
-        return 600, 0
-    elif baseline >= 10:
-        return baseline, 1
-    else:
-        n = 1
-        while baseline < 10:
-            n += 1
-            baseline *= (2*n-1)
-        return baseline, n
+#Calculate planet signal flux (phot/s/m^2)
+def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
+
+    signal = []
+
+    for (res,ker) in outputs:
+
+        temp_signal = []
+        for flux,wave in zip(planet.flux,spec.channel_centres):
+            planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
+
+            if mode == 1:
+                p_trans = azimuthal_rms(ker,planet_pos)
+            if mode == 2:
+                p_trans = azimuthal_max(ker,planet_pos)
+
+            p_flux = p_trans*flux
+            temp_signal.append(p_flux)
+        signal.append(temp_signal)
+
+    return signal
+
+
+def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
+
+    shot_noise = []
+
+    for (res,ker) in outputs:
+
+        temp_shot_noise = []
+        for flux,wave in zip(planet.flux,spec.channel_centres):
+            planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
+
+            if mode == 1:
+                p_trans = azimuthal_mean(res,planet_pos)
+            if mode == 2:
+                p_trans = azimuthal_max(res,planet_pos)
+
+            p_flux = p_trans*flux
+            temp_shot_noise.append(p_flux)
+        shot_noise.append(temp_shot_noise)
+
+    return shot_noise
+
+
+#Calculate stellar leakage flux through an increased resolution simulation (like exozodiacal light)
+def stellar_leakage(star,response_func,baseline,base_wavelength):
+
+    sz = 400
+
+    #Create an array
+    arr = np.arange(sz)-sz/2
+    x,y = np.meshgrid(arr,arr)
+    r = np.sqrt(x**2 + y**2)
+    r *= 2/sz #convert into multiples of stellar radius
+
+    pixel_size = r[100,100] - r[100,99]
+
+    #Limb_darkening, normalised over the total area
+    I = limb_darkening(r)#
+    I[np.isnan(I)] = 0
+    I/=np.sum(I)
+
+    #Turn into limb_darkened flux
+    fluxes = np.tile(star.flux,(sz,sz,1)).T
+    I = I*fluxes
+
+    #calculate transmission (field of view has a radius equal to star's angular radius)
+    outputs = response_func(baseline,2*star.angRad/rad2mas,sz,base_wavelength)
+
+    #Calculate leakage
+    leakage = []
+    for (res,ker) in outputs:
+        leakage.append(np.sum(res*I,axis=(1,2)))
+
+    return leakage
 
 #Calculate zodiacal background in phot/s (no collecting area dependence)
 def zodiacal_background(star,spec):
@@ -116,23 +178,6 @@ def zodiacal_background(star,spec):
 
     return np.array(zodi_power)
 
-
-#Calculate planet signal flux (phot/s/m^2)
-def calc_planet_signal(trans_map,planet,wave_pix2mas,spec,mode):
-
-    signal_ls = []
-    for flux,wave in zip(planet.flux,spec.channel_centres):
-        planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
-
-        if mode == 1:
-            p_trans = azimuthal_rms(trans_map,planet_pos)
-        if mode == 2:
-            p_trans = azimuthal_max(trans_map,planet_pos)
-
-        p_flux = p_trans*flux
-        signal_ls.append(p_flux)
-
-    return np.array(signal_ls)
 
 
 #Caclulate the local zodiacal radiance (photons/s/m^2/sr) along the zodiacal axis of symmetry
@@ -178,7 +223,7 @@ def calc_local_zodiacal_minimum(spec):
 
 #Calc the exozodiacal flux (photons/s/m^2)
 #Essentially sums over solid angle.
-def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz,spec):
+def calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec):
 
     #Create array
     arr = np.arange(sz)-sz/2
@@ -205,28 +250,33 @@ def calc_exozodiacal(star,trans_map,local_exozodi,pix2mas,sz,spec):
     #Solid angle of each pixel
     solid_angle_pix = (pix2mas/rad2mas)**2
 
-    #Calculate exozodiacal flux for each wavelength channel
+    #Calculate over all outputs
     exozodi = []
-    for i in range(len(local_exozodi)):
-        #Zodi flux at 1au is 2*local amount*exozodis
-        local_scale_factor = 2*local_exozodi[i]*star.Exzod
+    for (res,ker) in outputs:
 
-        #Normalised planck distribution (i.e radiance)
-        wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,50)
+        #Calculate exozodiacal flux for each wavelength channel
+        temp_exozodi = []
+        for i in range(len(local_exozodi)):
+            #Zodi flux at 1au is 2*local amount*exozodis
+            local_scale_factor = 2*local_exozodi[i]*star.Exzod
 
-        planck_arr = []
-        planck_norm = []
-        for lam in wavelength_sample:
-            planck_arr.append(Planck(temp_dist,lam))
-            planck_norm.append(Planck(300,lam))
+            #Normalised planck distribution (i.e radiance)
+            wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,50)
 
-        planck_dist = np.trapz(np.array(planck_arr),wavelength_sample,axis=0)/np.trapz(np.array(planck_norm),wavelength_sample)
+            planck_arr = []
+            planck_norm = []
+            for lam in wavelength_sample:
+                planck_arr.append(Planck(temp_dist,lam))
+                planck_norm.append(Planck(300,lam))
 
-        flux_dist = column_density*planck_dist
+            planck_dist = np.trapz(np.array(planck_arr),wavelength_sample,axis=0)/np.trapz(np.array(planck_norm),wavelength_sample)
 
-        exozodi.append(np.sum(flux_dist*trans_map*local_scale_factor*solid_angle_pix))
+            flux_dist = column_density*planck_dist
 
-    return np.array(exozodi)
+            temp_exozodi.append(np.sum(flux_dist*res*local_scale_factor*solid_angle_pix))
+        exozodi.append(temp_exozodi)
+
+    return exozodi
 
 
 def azimuthal_max(image,r):
@@ -273,3 +323,25 @@ def azimuthal_rms(image,r):
         sum += a**2
 
     return np.sqrt(sum/n_angles)
+
+def azimuthal_mean(image,r):
+
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
+    sum = 0
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        sum += a
+
+    return sum/n_angles
