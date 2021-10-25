@@ -1,7 +1,6 @@
 #Old function graveyard
 
 
-
 #Calculate stellar leakage flux through Mike's method
 def Mike_stellar_leakage(star,response,pix2mas):
     #Find the null function numerically

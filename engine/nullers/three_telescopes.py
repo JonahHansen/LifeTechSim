@@ -5,9 +5,10 @@ from opticstools import knull
 
 #The baseline is the distance between adjacent spacecraft
 def triangle(baseline):
+    R = 0.5773*baseline
     angles = np.linspace(0,2*np.pi,4)
-    xs = 0.5773*baseline*np.sin(angles)
-    ys = 0.5773*baseline*np.cos(angles)
+    xs = R*np.cos(angles)
+    ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
 
 
