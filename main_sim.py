@@ -8,7 +8,7 @@ from multiprocessing import Pool
 import json
 import sys
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 6:
     raise Exception("Wrong number of arguments")
 
 #####################################################
@@ -19,8 +19,11 @@ Architecture
  1 = Bracewell
  2 = Linear nuller
  3 = Three way kernel nuller
- 4 = Four way kernel nuller
- 5 = Five way kernel nuller
+ 4 = Four way kernel nuller (Kernel 1)
+ 5 = Four way kernel nuller (Kernel 2)
+ 6 = Four way kernel nuller (Kernel 3)
+ 7 = Five way kernel nuller (Kernel 1)
+ 8 = Five way kernel nuller (Kernel 2)
 
 Mode
  1 = Search (optimises habitible zone of star, array spins)
@@ -32,7 +35,7 @@ architecture = int(sys.argv[1])
 mode = int(sys.argv[2])
 base_wave = float(sys.argv[3]) #microns
 out_file = str(sys.argv[4])
-
+first_run = bool(sys.argv[5])
 
 #####################################################
 #Secondary parameters
@@ -43,8 +46,6 @@ num_channels = 10
 
 planet_path = "PPop/LifeTechSimPlanetPopulation.txt"
 
-first_run = True
-
 number_processes = 28
 #####################################################
 
@@ -54,6 +55,7 @@ spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 if architecture == 1:
     from engine.nullers.bracewell import get_nuller_response
     architecture_verbose = "Bracewell four telescope nuller"
+    base_scale_factor = 0.59
 
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
@@ -66,17 +68,28 @@ elif architecture == 3:
 
 elif architecture == 4:
     from engine.nullers.four_telescopes import get_nuller_response
-    architecture_verbose = "Four telescope kernel nuller"
+    architecture_verbose = "Four telescope kernel nuller, optimised for K1"
 
-elif architecture == 5.1:
+elif architecture == 5:
+    from engine.nullers.four_telescopes import get_nuller_response
+    architecture_verbose = "Four telescope kernel nuller, optimised for K2"
+
+elif architecture == 6:
+    from engine.nullers.four_telescopes import get_nuller_response
+    architecture_verbose = "Four telescope kernel nuller, optimised for K3"
+
+elif architecture == 7:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised for adjacent telescopes (K1)"
     base_scale_factor = 1.028
 
-elif architecture == 5.2:
+elif architecture == 8:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
     base_scale_factor = 0.66 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
+
+else:
+    raise Exception("Architecture not recognised")
 
 #Set modes
 if mode == 1:
@@ -87,6 +100,8 @@ elif mode == 2:
     sz = 600
     mode_verbose = "Characterisation"
     fov_scale_factor = 2
+else:
+    raise Exception("Mode not recognised")
 
 #Get star list
 if first_run:

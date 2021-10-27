@@ -51,7 +51,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
-                        "star_type":star.Stype,"baseline (m)":baseline,
+                        "star_type":star.Stype,"star_distance (pc)":star.Dist,"baseline (m)":baseline,
                         "array_angle (mas)":star.HZAngle, "planet_angle (mas)":planet.PAngSep,
                         "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
                         "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,
@@ -91,8 +91,8 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
-                        "star_type":star.Stype,"baseline (m)":baseline,
-                        "array_angle (mas)":star.PAngSep, "planet_angle (mas)":planet.PAngSep, 
+                        "star_type":star.Stype,"star_distance (pc)":star.Dist,"baseline (m)":baseline,
+                        "array_angle (mas)":star.PAngSep, "planet_angle (mas)":planet.PAngSep,
                         "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
                         "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,
                         "signal (ph/s/m2)":signal,

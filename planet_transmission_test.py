@@ -38,45 +38,26 @@ def azimuthal_rms(image,r):
 
     return np.sqrt(sum/n_angles)
 
-from engine.nullers.four_telescopes import get_nuller_response
+from engine.nullers.bracewell import get_nuller_response
 
 
-outputs = get_nuller_response(baseline,fov,sz,wavelength)
+outputs = get_nuller_response(baseline,fov,sz,wavelength,10)
 
-rs = np.linspace(100,199,100)
-k1_ave = []
-k2_ave = []
+rs = np.linspace(0.01,199,100)
 
-for r in rs:
-    k1_ave.append(azimuthal_rms(k1,r))
-    k2_ave.append(azimuthal_rms(k2,r))
+ks = []
+i = 1
+for (res,k) in outputs:
+    k_ave = []
+    for r in rs:
+        k_ave.append(azimuthal_rms(k,r))
+    ks.append(k_ave)
+    plt.figure(i)
+    plt.imshow(k)
+    i+=1
 
-plt.figure(1)
-plt.imshow(k1)
-plt.figure(2)
-plt.imshow(k2)
-plt.figure(3)
-plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,k1_ave,label="k1")
-plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,k2_ave,label="k2")
-#plt.axvline(x=HZAngle,color="k")
+plt.figure(i)
+for j in range(len(outputs)):
+    plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="k%s"%j)
+
 plt.legend()
-plt.xlabel("Radial coordinate (mas)")
-plt.ylabel("Transmission")
-"""
-r,k1 = get_nuller_response_tri()
-
-rs = np.linspace(0.01,199)
-k1_ave = []
-
-for r in rs:
-    k1_ave.append(azimuthal_rms(k1,r))
-
-plt.figure(1)
-plt.imshow(k1)
-plt.figure(3)
-plt.plot(rs*pix2mas,k1_ave,label="k1")
-plt.axvline(x=HZAngle,color="k")
-plt.legend()
-plt.xlabel("Radial coordinate (mas)")
-plt.ylabel("Transmission")
-"""

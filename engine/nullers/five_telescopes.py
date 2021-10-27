@@ -6,7 +6,7 @@ from opticstools import knull
 #The baseline given to this function is the one that defines the side length of the pentagon
 #Scale the argument to this function appropriately if defining baselines based on diagonals
 def pentagon(baseline):
-    R = 0.8507*baseline
+    R = 0.85065*baseline
     angles = np.linspace(0,2*np.pi,6)
     xs = R*np.cos(angles)
     ys = R*np.sin(angles)

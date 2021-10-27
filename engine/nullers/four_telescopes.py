@@ -15,11 +15,11 @@ def right_kite(baseline,ratio):
     return np.array([xs,ys]).T
 
 
-def get_nuller_response(baseline,fov,sz,base_wavelength):
+def get_nuller_response(baseline,fov,sz,base_wavelength,ratio=1.5):
 
     M = knull.make_nuller_mat4(bracewell_design=False, ker_only=True)
 
-    telescope_array = kite(baseline,1.5)
+    telescope_array = right_kite(baseline,ratio)
 
     sky_angles = np.linspace(-fov/2,fov/2,sz)
 
