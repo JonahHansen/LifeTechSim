@@ -27,6 +27,9 @@ def grab_SNR_per_kernel(dict,D,t,eta):
 def total_SNR(SNR_array):
     return SNR_collapse(np.flatten(SNR_array))
 
+def cost(N,D,lambda,T=20):
+    return N*300*D**1.7*lambda**(-0.5)*T**(-0.25)
+
 fin = open(filename,"r")
 
 data = json.load(fin)
