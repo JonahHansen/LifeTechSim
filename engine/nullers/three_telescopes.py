@@ -14,7 +14,7 @@ def triangle(baseline):
 
 def get_nuller_response(baseline,fov,sz,base_wavelength):
 
-    N = knull.make_nuller_mat3()
+    N = knull.make_nuller_mat3_JH()
 
     telescope_array = triangle(baseline)
 
@@ -36,6 +36,9 @@ def get_nuller_response(baseline,fov,sz,base_wavelength):
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
     response = np.abs(response)**2
+
+    #import pdb; pdb.set_trace()
+
     response /= (np.max(response[0])/3) #normalise by flux per telescope
 
     #Create the kernel nulls. This is turning the output intensities into the kernel nulls (K in 2018 paper)

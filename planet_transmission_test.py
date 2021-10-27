@@ -6,14 +6,14 @@ from opticstools import knull
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 wavelength = 14e-6 #m
-scale_factor = 1.2
-base_scale_factor = 1.04
+scale_factor = 2
+base_scale_factor = 1.03
 
 sz = 400
 
 #Tau Ceti
-L = 0.2 #Lsol
-Dist = 10.65 #Pc
+L = 0.6 #Lsol
+Dist = 6.65 #Pc
 
 HZAngle = np.sqrt(L)*1000/Dist
 
@@ -38,10 +38,10 @@ def azimuthal_rms(image,r):
 
     return np.sqrt(sum/n_angles)
 
-from engine.nullers.bracewell import get_nuller_response
+from engine.nullers.five_telescopes import get_nuller_response
 
-
-outputs = get_nuller_response(baseline,fov,sz,wavelength,10)
+#1.69 for four telescopes
+outputs = get_nuller_response(baseline,fov,sz,wavelength)
 
 rs = np.linspace(0.01,199,100)
 
@@ -58,6 +58,16 @@ for (res,k) in outputs:
 
 plt.figure(i)
 for j in range(len(outputs)):
-    plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="k%s"%j)
-
+    plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1))
+plt.title("Transmission per kernel output")
+plt.ylabel("Transmission per telescope")
+plt.xlabel(r"Angular distance ($\lambda/B$)")
 plt.legend()
+
+
+ks = np.array(ks)
+plt.figure(i+1)
+plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,np.sum(ks,axis=0))
+plt.title("Total transmission")
+plt.ylabel("Transmission per telescope")
+plt.xlabel(r"Angular distance ($\lambda/B$)")

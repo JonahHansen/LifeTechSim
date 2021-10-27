@@ -46,7 +46,7 @@ def make_nuller_mat5():
     return initial_mat
 
 
-def make_nuller_mat3():
+def make_nuller_mat3_JH():
     """Create a 3x3 Nuller matrix"""
     initial_mat = np.zeros( (3,3) )
     for i in range(3):

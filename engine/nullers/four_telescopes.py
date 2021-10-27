@@ -3,6 +3,11 @@ sys.path.append("../..")
 import numpy as np
 from opticstools import knull
 
+def rectangle(baseline,ratio):
+    xs = [baseline/2,-baseline/2,-baseline/2,baseline/2]
+    ys = [baseline*ratio/2,baseline*ratio/2,-baseline*ratio/2,-baseline*ratio/2]
+    return np.array([xs,ys]).T
+
 #The baseline given to this function is the one that defines the side length of the pentagon
 #Scale the argument to this function appropriately if defining baselines based on diagonals
 def right_kite(baseline,ratio):
@@ -15,7 +20,7 @@ def right_kite(baseline,ratio):
     return np.array([xs,ys]).T
 
 
-def get_nuller_response(baseline,fov,sz,base_wavelength,ratio=1.5):
+def get_nuller_response(baseline,fov,sz,base_wavelength,ratio=1.69):
 
     M = knull.make_nuller_mat4(bracewell_design=False, ker_only=True)
 

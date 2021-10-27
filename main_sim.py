@@ -55,7 +55,7 @@ spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 if architecture == 1:
     from engine.nullers.bracewell import get_nuller_response
     architecture_verbose = "Bracewell four telescope nuller"
-    base_scale_factor = 0.59
+    base_scale_factor = 0.590
 
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
@@ -64,19 +64,22 @@ elif architecture == 2:
 elif architecture == 3:
     from engine.nullers.three_telescopes import get_nuller_response
     architecture_verbose = "Three telescope kernel nuller"
-    base_scale_factor = 0.5
+    base_scale_factor = 0.666
 
 elif architecture == 4:
     from engine.nullers.four_telescopes import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller, optimised for K1"
+    base_scale_factor = 0.4
 
 elif architecture == 5:
     from engine.nullers.four_telescopes import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller, optimised for K2"
+    base_scale_factor = 0.4
 
 elif architecture == 6:
     from engine.nullers.four_telescopes import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller, optimised for K3"
+    base_scale_factor = 0.4
 
 elif architecture == 7:
     from engine.nullers.five_telescopes import get_nuller_response
@@ -86,7 +89,7 @@ elif architecture == 7:
 elif architecture == 8:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
-    base_scale_factor = 0.66 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
+    base_scale_factor = 0.660 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
 else:
     raise Exception("Architecture not recognised")
