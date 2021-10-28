@@ -49,7 +49,8 @@ OUTPUTS:
 """
 #Planck function as a function of temperature and wavelength
 def Planck(T,lam):
-    return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
+    with np.errstate(over='ignore', invalid='ignore'):
+        return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
 
 
 def Planck_wrapper(T):

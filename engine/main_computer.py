@@ -68,7 +68,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
         for planet in star.Planets:
             baseline = base_scale_factor*base_wavelength*rad2mas/planet.PAngSep
             fov = 2*fov_scale_factor*planet.PAngSep/rad2mas
-            outputs = sf.nuller_response(baseline,fov,sz,base_wavelength)
+            outputs = nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz
 
             print("\nCalculating Exozodiacal")
