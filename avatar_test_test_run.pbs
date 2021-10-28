@@ -14,4 +14,5 @@ cd /avatar/jhansen/LifeTechSim
 
 ##### Execute Program #####
 source ../pyenv/bin/activate
-python main_sim.py 5 1 15 avatar_full_test.json True
+python main_sim.py 1 1 10 avatar_test_1_1_10.json True
+python main_sim.py 1 2 18 avatar_test_1_2_18.json False

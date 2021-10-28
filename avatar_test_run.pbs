@@ -1,0 +1,46 @@
+##### Select resources #####
+#PBS -N LIFESim
+#PBS -l ncpus=28
+
+##### Queue #####
+#PBS -q smallmem
+
+##### Mail Options #####
+# Send an email at job start, end and if aborted
+#PBS -m abe
+
+##### Change to your working directory #####
+cd /avatar/jhansen/LifeTechSim
+
+##### Execute Program #####
+source ../pyenv/bin/activate
+python main_sim.py 1 1 10 avatar_test_1_1_10.json True
+python main_sim.py 1 2 10 avatar_test_1_2_10.json False
+python main_sim.py 1 1 15 avatar_test_1_1_15.json False
+python main_sim.py 1 2 15 avatar_test_1_2_15.json False
+python main_sim.py 1 1 18 avatar_test_1_1_18.json False
+python main_sim.py 1 2 18 avatar_test_1_2_18.json False
+python main_sim.py 3 1 10 avatar_test_3_1_10.json False
+python main_sim.py 3 2 10 avatar_test_3_2_10.json False
+python main_sim.py 3 1 15 avatar_test_3_1_15.json False
+python main_sim.py 3 2 15 avatar_test_3_2_15.json False
+python main_sim.py 3 1 18 avatar_test_3_1_18.json False
+python main_sim.py 3 2 18 avatar_test_3_2_18.json False
+python main_sim.py 4 1 10 avatar_test_4_1_10.json True
+python main_sim.py 4 2 10 avatar_test_4_2_10.json False
+python main_sim.py 4 1 15 avatar_test_4_1_15.json False
+python main_sim.py 4 2 15 avatar_test_4_2_15.json False
+python main_sim.py 4 1 18 avatar_test_4_1_18.json False
+python main_sim.py 4 2 18 avatar_test_4_2_18.json False
+python main_sim.py 7 1 10 avatar_test_7_1_10.json True
+python main_sim.py 7 2 10 avatar_test_7_2_10.json False
+python main_sim.py 7 1 15 avatar_test_7_1_15.json False
+python main_sim.py 7 2 15 avatar_test_7_2_15.json False
+python main_sim.py 7 1 18 avatar_test_7_1_18.json False
+python main_sim.py 7 2 18 avatar_test_7_2_18.json False
+python main_sim.py 8 1 10 avatar_test_8_1_10.json True
+python main_sim.py 8 2 10 avatar_test_8_2_10.json False
+python main_sim.py 8 1 15 avatar_test_8_1_15.json False
+python main_sim.py 8 2 15 avatar_test_8_2_15.json False
+python main_sim.py 8 1 18 avatar_test_8_1_18.json False
+python main_sim.py 8 2 18 avatar_test_8_2_18.json False
