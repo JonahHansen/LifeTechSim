@@ -60,7 +60,8 @@ def Planck_wrapper(T):
 
 #Limb darkening as a function of the fraction of stellar radius (1 = stellar radius)
 def limb_darkening(r):
-    mu = np.sqrt(1-r**2)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        mu = np.sqrt(1-r**2)
     return 1-0.47*(1-mu)-0.23*(1-mu)**2
 
 #Calculate planet signal flux (phot/s/m^2)
@@ -241,11 +242,13 @@ def calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec):
                                [0, lambda x: (x-r_in)/(r_out-r_in), 1])
 
     #Column density distribution of zodiacal dust (IS THIS SCALING TRUE???)
-    column_density = lambda_r*r**(-0.3)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        column_density = lambda_r*r**(-0.3)
     column_density[int(sz/2),int(sz/2)] = 0
 
     #Temperature distribution of zodiacal dust (IS THIS SCALING TRUE???)
-    temp_dist = 300*r**(-0.5)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        temp_dist = 300*r**(-0.5)
     temp_dist[int(sz/2),int(sz/2)] = 1
 
     #Solid angle of each pixel

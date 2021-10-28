@@ -68,7 +68,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
         for planet in star.Planets:
             baseline = base_scale_factor*base_wavelength*rad2mas/planet.PAngSep
             fov = 2*fov_scale_factor*planet.PAngSep/rad2mas
-            outputs = nuller_response(baseline,fov,sz,base_wavelength)
+            outputs = sf.nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz
 
             print("\nCalculating Exozodiacal")
@@ -77,7 +77,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             print("\nCalculating Leakage")
             #Calc stellar leakage flux (phot/s/m^2) per telescope
-            leakage = stellar_leakage(star,nuller_response,baseline,base_wavelength)
+            leakage = sf.stellar_leakage(star,nuller_response,baseline,base_wavelength)
 
             #pix2mas conversion, removing wavelength dependence
             #multiply by wavelength to get conversion factor for that wavelength
