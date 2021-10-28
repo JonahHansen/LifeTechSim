@@ -25,7 +25,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
         #INSERT BASELINE CHECKER BASED ON OPTIMISATION?
 
-        fov = 2*scale_factor*star.HZAngle/rad2mas
+        fov = 2*fov_scale_factor*star.HZAngle/rad2mas
         outputs = nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz
 
@@ -67,7 +67,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
     if mode == 2:
         for planet in star.Planets:
             baseline = base_scale_factor*base_wavelength*rad2mas/planet.PAngSep
-            fov = 2*scale_factor*planet.PAngSep/rad2mas
+            fov = 2*fov_scale_factor*planet.PAngSep/rad2mas
             outputs = nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz
 

@@ -1,9 +1,9 @@
 import numpy as np
 import pickle
 from engine.main_computer import compute
-from engine.nullers.five_telescopes import get_nuller_response
+from engine.nullers.bracewell import get_nuller_response
 from engine.sim_functions import calc_local_zodiacal_minimum,Spectrograph
-from planet_retrieval import RetrievePlanetData as RPD
+from engine.planet_retrieval import RetrievePlanetData as RPD
 
 #Main parameters
 mode = 1 #1 is search mode, 2 is characterisation mode
@@ -34,6 +34,6 @@ else:
 
 local_exozodi = calc_local_zodiacal_minimum(spec)
 
-base_scale_factor = 1.028
+base_scale_factor = 0.59
 
-star_data = compute(star_list[5],mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
+star_data = compute(star_list[2],mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)

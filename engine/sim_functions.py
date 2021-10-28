@@ -135,6 +135,7 @@ def stellar_leakage(star,response_func,baseline,base_wavelength):
 
     #Calculate leakage
     leakage = []
+
     for (res,ker) in outputs:
         leakage.append(np.sum(res*I,axis=(1,2)))
 
@@ -261,7 +262,7 @@ def calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec):
             local_scale_factor = 2*local_exozodi[i]*star.Exzod
 
             #Normalised planck distribution (i.e radiance)
-            wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,50)
+            wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,10)
 
             planck_arr = []
             planck_norm = []

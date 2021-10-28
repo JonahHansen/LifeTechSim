@@ -41,7 +41,7 @@ def azimuthal_rms(image,r):
 from engine.nullers.five_telescopes import get_nuller_response
 
 #1.69 for four telescopes
-outputs = get_nuller_response(baseline,fov,sz,wavelength)
+resp, outputs = get_nuller_response(baseline,fov,sz,wavelength)
 
 rs = np.linspace(0.01,199,100)
 
