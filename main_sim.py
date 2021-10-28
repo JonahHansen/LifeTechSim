@@ -111,12 +111,12 @@ if first_run:
 
     star_list = RPD(planet_path,spec)
 
-    f = open("sst_star_list.pkl","wb")
+    f = open("star_list.pkl","wb")
     pickle.dump(star_list, f)
     f.close()
 
 else:
-    f = open("sst_star_list.pkl","rb")
+    f = open("star_list.pkl","rb")
     star_list = pickle.load(f)
     f.close()
 
