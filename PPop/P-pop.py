@@ -28,7 +28,7 @@ warnings.filterwarnings('ignore')
 
 # Import your own catalogs, distributions and models here.
 import SystemGenerator
-from StarCatalogs import CrossfieldBrightSample, ExoCat_1, LTC_2, LTC_3
+from StarCatalogs import CrossfieldBrightSample, ExoCat_1, LTC_2, LTC_3, LTC_3_100
 from PlanetDistributions import Fressin2013, Burke2015, Dressing2015, SAG13,\
                                 Weiss2018, Weiss2018KDE, HabitableNominal, \
                                 HabitablePessimistic, Fernandes2019symm
@@ -52,7 +52,7 @@ from ExozodiModels import Ertel2020, Ertel2018
 #StarCatalog = CrossfieldBrightSample # used in Kammerer & Quanz 2018
 #StarCatalog = ExoCat_1 # used by NASA
 #StarCatalog = LTC_2 # LIFE Target Catalog (version 2)
-StarCatalog = LTC_3 # LIFE Target Catalog (version 3)
+StarCatalog = LTC_3_100 # LIFE Target Catalog (version 3)
 Stypes = ['A', 'F', 'G', 'K', 'M'] # list of str
 Dist_range = [0., 20.] # pc, list of float, [min, max]
 Dec_range = [-90., 90.] # deg, list of float, [min, max]
@@ -104,8 +104,8 @@ block = False
 
 # Select a name for the output planet population table and how many universes
 # should be simulated.
-Name = 'LifeTechSimPlanetPopulation' # str
-Nuniverses = 10 # int
+Name = 'LifeTechSimTestPlanetPopulation' # str
+Nuniverses = 5 # int
 
 
 # =============================================================================

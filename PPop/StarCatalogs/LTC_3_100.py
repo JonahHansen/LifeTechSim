@@ -26,7 +26,7 @@ class StarCatalog():
                  Stypes=['B', 'A', 'F', 'G', 'K', 'M', 'D'],
                  Dist_range=[0, 30], # pc
                  Dec_range=[-90, 90], # deg
-                 Path='StarCatalogs/LTC_3.csv'):
+                 Path='StarCatalogs/LTC_3_100.csv'):
         """
         Parameters
         ----------

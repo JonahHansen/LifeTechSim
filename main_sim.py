@@ -44,7 +44,7 @@ min_wave = 3 #microns
 max_wave = 18 #microns
 num_channels = 10
 
-planet_path = "PPop/LifeTechSimPlanetPopulation.txt"
+planet_path = "PPop/LifeTechSimTestPlanetPopulation.txt"
 
 number_processes = 28
 #####################################################
