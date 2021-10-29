@@ -119,6 +119,38 @@ def azimuthal_max(image,r):
 
     return max
 
+"""
+Calculate the maximum over azimuthal angles for a given response map and
+radial position
+
+Inputs:
+    image = response map
+    r = radial position to find the maximum over angles
+
+Outputs:
+    maximum over azimuthal angles
+"""
+def azimuthal_array(image,r):
+
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
+    arr = []
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        arr.append(a)
+
+    return np.array(arr)
 
 """
 Calculate the RMS average over azimuthal angles for a given response map and
@@ -216,14 +248,20 @@ def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
             if mode == 1:
                 #Search mode is rms average of kernel azimuth
                 p_trans = azimuthal_rms(ker,planet_pos)
+                p_flux = p_trans*flux #multiply by flux
+                temp_signal.append(p_flux)
+
             if mode == 2:
                 #Characterisation mode is maximum of kernel azimuth
-                p_trans = azimuthal_max(ker,planet_pos)
+                p_flux_angle_array = azimuthal_array(ker,planet_pos)*flux
+                temp_signal.append(p_flux_angle_array)
 
-            #Multiply by flux
-            p_flux = p_trans*flux
-            temp_signal.append(p_flux)
         signal.append(temp_signal)
+
+    if mode == 2:
+        summed_signal = np.sum(np.array(signal),axis=(0,1))
+        arg = np.argmax(summed_signal)
+        signal = signal[:,:,arg]
 
     return signal
 
@@ -253,15 +291,22 @@ def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
             planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
 
             if mode == 1:
-                #Search is mean of the transmission azimuth
+                #Search mode is rms average of kernel azimuth
                 p_trans = azimuthal_mean(res,planet_pos)
-            if mode == 2:
-                #Characterisation is max of the transmission azimuth
-                p_trans = azimuthal_max(res,planet_pos)
+                p_flux = p_trans*flux #multiply by flux
+                temp_shot_noise.append(p_flux)
 
-            p_flux = p_trans*flux
-            temp_shot_noise.append(p_flux)
+            if mode == 2:
+                #Characterisation mode is maximum of kernel azimuth
+                p_flux_angle_array = azimuthal_array(res,planet_pos)*flux
+                temp_shot_noise.append(p_flux_angle_array)
+
         shot_noise.append(temp_shot_noise)
+
+    if mode == 2:
+        summed_shot = np.sum(np.array(shot_noise),axis=(0,1))
+        arg = np.argmax(summed_shot)
+        shot_noise = shot_noise[:,:,arg]
 
     return shot_noise
 

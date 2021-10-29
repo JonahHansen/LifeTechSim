@@ -5,7 +5,7 @@ from engine.sim_functions import calc_local_zodiacal_minimum,Spectrograph
 from engine.planet_retrieval import RetrievePlanetData as RPD
 
 #Main parameters
-mode = 1 #1 is search mode, 2 is characterisation mode
+mode = 2 #1 is search mode, 2 is characterisation mode
 spec = Spectrograph(3,18,15,10) #min,max,baseline_wavelength,num_channels
 planet_path = "PPop/TestPlanetPopulation2.txt" #Input planet data
 

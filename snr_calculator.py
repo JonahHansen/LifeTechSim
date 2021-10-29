@@ -197,6 +197,37 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
     return df
 
 
+def get_data_one_planet(planet_index,mode,wave_index):
+    prefix = "out_data/avatar_test"
+    mode_names = ["Search","Characterisation"]
+    arch = [1,3,4,7,8]
+    wavelengths = [10,15,18]
+    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2"]
+    arch_num_tel = [4,3,4,5,5]
+
+    D = 2
+    t = 3600
+    eta = 0.1
+
+    #Baseline limits
+    baseline_min = 10
+    baseline_max = 600
+
+    #Name of dataframe (for saving?)
+    df_name = prefix+"_dataframe_"+mode_names[mode-1]+"_"+str(wavelengths[wave_index])+".df"
+
+    result_dict = {}
+    SNR_arr = []
+    for j,a in enumerate(arch):
+        #Create list of dictionaries and sort them
+        results = load_results(prefix,a,mode,wavelengths[wave_index])
+        results.sort(key=lambda item: item.get("planet_name"))
+
+        result_dict.update({arch_names[j]:results[planet_index]})
+        SNR_arr.append(grab_SNR_per_kernel(results[planet_index],D,t,eta))
+
+    return result_dict, SNR_arr
+
 """
 Make a pie chart of the architecture with best SNR over all planets
 Inputs:
