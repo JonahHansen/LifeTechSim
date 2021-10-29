@@ -12,7 +12,19 @@ au = const.au.value #AU in m
 pc = const.pc.value #parsec in m
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
-#Initiate units in um. Attributes in m
+
+########################################################
+
+"""
+Spectrograph class that contains spectral parameters
+Initiate units in um. Attributes in m
+
+Inputs:
+    wave_min = minimum wavelength
+    wave_max = maximum wavelength
+    baseline_wave = wave to optimise baselines around
+    n_channels = number of spectral channels
+"""
 class Spectrograph():
     def __init__(self, wave_min, wave_max, baseline_wave, n_channels):
 
@@ -40,19 +52,24 @@ class Spectrograph():
 
 
 """
-Planck function
+The spectral flux density for a blackbody
+    T = Temperature of blackbody in K
+    lam = wavelength in m
+OUTPUTS:
+    Spectral flux density
+"""
+def Planck(T,lam):
+    with np.errstate(over='ignore', invalid='ignore'):
+        return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
+
+"""
 Return a function for the spectral flux density as a function of wavelength
+Essentially a wrapper for the above function
 INPUTS:
     T = Temperature of blackbody in K
 OUTPUTS:
     Planck function as a function of wavelength (photons/m^2/s/m)
 """
-#Planck function as a function of temperature and wavelength
-def Planck(T,lam):
-    with np.errstate(over='ignore', invalid='ignore'):
-        return 2*np.pi*c/(lam**4)/(np.exp(h*c/(lam*k_B*T))-1)
-
-
 def Planck_wrapper(T):
     def func(lam):
         return Planck(T,lam)
@@ -65,7 +82,127 @@ def limb_darkening(r):
         mu = np.sqrt(1-r**2)
     return 1-0.47*(1-mu)-0.23*(1-mu)**2
 
-#Calculate planet signal flux (phot/s/m^2)
+
+##################### Azimuthal functions ###################################
+
+"""
+Calculate the maximum over azimuthal angles for a given response map and
+radial position
+
+Inputs:
+    image = response map
+    r = radial position to find the maximum over angles
+
+Outputs:
+    maximum over azimuthal angles
+"""
+def azimuthal_max(image,r):
+
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
+    max = 0
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        if a > max:
+            max = a
+
+    return max
+
+
+"""
+Calculate the RMS average over azimuthal angles for a given response map and
+radial position
+
+Inputs:
+    image = map to average over
+    r = radial position to average over angles
+
+Outputs:
+    RMS average over azimuth
+"""
+def azimuthal_rms(image,r):
+
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
+    sum = 0
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        sum += a**2
+
+    return np.sqrt(sum/n_angles)
+
+
+"""
+Calculate the mean average over azimuthal angles for a given response map and
+radial position
+
+Inputs:
+    image = map to average over
+    r = radial position to average over angles
+
+Outputs:
+    mean over azimuth
+"""
+def azimuthal_mean(image,r):
+
+    n_angles = 10000
+    angles = np.linspace(0,2*np.pi,n_angles)
+
+    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
+
+    #Planet out of field of view!
+    if r > image.shape[0]/2:
+        return 0
+
+    sum = 0
+    for theta in angles:
+        x = centre[0] + r*np.cos(theta)
+        y = centre[1] + r*np.sin(theta)
+
+        a = image[int(x),int(y)]
+
+        sum += a
+
+    return sum/n_angles
+
+##################### Main Signal/Noise functions #########################
+
+"""
+Calculate planet signal flux (phot/s/m^2)
+
+Inputs:
+    outputs = list of (response,kernel) map tuples
+    planet = planet (of planet class) to calculate the signal of
+    wave_pix2mas = pixel to mas conversion factor, decoupled from wavelength
+                   multiply by wavelength to get proper scale factor
+    spec = spectrograph class that contains the spectral parameters
+    mode = 1 = search, 2 = characterisation
+
+Output:
+    list of planet signal fluxes in phot/s/m^2 (for each kernel and wavelength)
+"""
 def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
 
     signal = []
@@ -77,10 +214,13 @@ def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
             planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
 
             if mode == 1:
+                #Search mode is rms average of kernel azimuth
                 p_trans = azimuthal_rms(ker,planet_pos)
             if mode == 2:
+                #Characterisation mode is maximum of kernel azimuth
                 p_trans = azimuthal_max(ker,planet_pos)
 
+            #Multiply by flux
             p_flux = p_trans*flux
             temp_signal.append(p_flux)
         signal.append(temp_signal)
@@ -88,6 +228,20 @@ def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
     return signal
 
 
+"""
+Calculate planet shot flux (phot/s/m^2)
+
+Inputs:
+    outputs = list of (response,kernel) map tuples
+    planet = planet (of planet class) to calculate the signal of
+    wave_pix2mas = pixel to mas conversion factor, decoupled from wavelength
+                   multiply by wavelength to get proper scale factor
+    spec = spectrograph class that contains the spectral parameters
+    mode = 1 = search, 2 = characterisation
+
+Output:
+    list of planet shot fluxes in phot/s/m^2 (for each kernel and wavelength)
+"""
 def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
 
     shot_noise = []
@@ -99,8 +253,10 @@ def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
             planet_pos = planet.PAngSep/(wave_pix2mas*wave) #in pixels
 
             if mode == 1:
+                #Search is mean of the transmission azimuth
                 p_trans = azimuthal_mean(res,planet_pos)
             if mode == 2:
+                #Characterisation is max of the transmission azimuth
                 p_trans = azimuthal_max(res,planet_pos)
 
             p_flux = p_trans*flux
@@ -110,7 +266,19 @@ def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
     return shot_noise
 
 
-#Calculate stellar leakage flux through an increased resolution simulation (like exozodiacal light)
+"""
+Calculate stellar leakage flux (phot/s/m^2)
+Uses an increased resolution simulation (like exozodiacal light)
+
+Inputs:
+    star = star (of star class) to calculate leakage of
+    response_func = function (based on architecture) to calculate the list of response maps
+    baseline = (shortest) baseline of the array
+    base_wavelength = wavelength used to define the baseline
+
+Output:
+    list of stellar leakage fluxes in phot/s/m^2 (for each kernel and wavelength)
+"""
 def stellar_leakage(star,response_func,baseline,base_wavelength):
 
     sz = 400
@@ -124,9 +292,9 @@ def stellar_leakage(star,response_func,baseline,base_wavelength):
     pixel_size = r[100,100] - r[100,99]
 
     #Limb_darkening, normalised over the total area
-    I = limb_darkening(r)#
+    I = limb_darkening(r)
     I[np.isnan(I)] = 0
-    I/=np.sum(I)
+    I/=np.sum(I) #normalise by total sum
 
     #Turn into limb_darkened flux
     fluxes = np.tile(star.flux,(sz,sz,1)).T
@@ -135,15 +303,24 @@ def stellar_leakage(star,response_func,baseline,base_wavelength):
     #calculate transmission (field of view has a radius equal to star's angular radius)
     outputs = response_func(baseline,2*star.angRad/rad2mas,sz,base_wavelength)
 
-    #Calculate leakage
+    #Calculate leakage for each output
     leakage = []
-
     for (res,ker) in outputs:
         leakage.append(np.sum(res*I,axis=(1,2)))
 
     return leakage
 
-#Calculate zodiacal background in phot/s (no collecting area dependence)
+
+"""
+Calculate zodiacal background power (phot/s) (no collecting area dependence)
+
+Inputs:
+    star = star (of star class) to calculate leakage of
+    spec = spectrograph class that contains the spectral parameters
+
+Output:
+    list of zodiacal powers in phot/s (for each wavelength)
+"""
 def zodiacal_background(star,spec):
 
     #Get JWST background
@@ -182,8 +359,16 @@ def zodiacal_background(star,spec):
     return np.array(zodi_power)
 
 
+"""
+Calculate the minimum local zodiacal radiance (photons/s/m^2/sr) along the zodiacal axis of symmetry
+That is, pointing in roughly the direction of the ecliptic pole
 
-#Caclulate the local zodiacal radiance (photons/s/m^2/sr) along the zodiacal axis of symmetry
+Inputs:
+    spec = spectrograph class that contains the spectral parameters
+
+Output:
+    list of local zodiacal radiance in photons/s/m^2/sr (for each wavelength)
+"""
 def calc_local_zodiacal_minimum(spec):
 
         #Ecliptic pole coordinates:
@@ -224,9 +409,24 @@ def calc_local_zodiacal_minimum(spec):
         return np.array(zodi_rad)
 
 
+"""
+Calculate exozodiacal flux (phot/s/m^2)
+Uses an resolution simulation, and assumes a distribution of the dust
+
+Inputs:
+    star = star (of star class) to calculate leakage of
+    outputs = list of (response,kernel) map tuples
+    local_zodi = list of minimum local zodiacal radiances (from above function)
+    pix2mas = pixel to mas conversion for the default array map
+    sz = size of response maps
+    spec = spectrograph class that contains the spectral parameters
+
+Output:
+    list of exozodiacal fluxes in phot/s/m^2 (for each kernel and wavelength)
+"""
 #Calc the exozodiacal flux (photons/s/m^2)
 #Essentially sums over solid angle.
-def calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec):
+def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
 
     #Create array
     arr = np.arange(sz)-sz/2
@@ -261,92 +461,32 @@ def calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec):
 
         #Calculate exozodiacal flux for each wavelength channel
         temp_exozodi = []
-        for i in range(len(local_exozodi)):
+        for i in range(len(local_zodi)):
             #Zodi flux at 1au is 2*local amount*exozodis
-            local_scale_factor = 2*local_exozodi[i]*star.Exzod
+            local_scale_factor = 2*local_zodi[i]*star.Exzod
 
-            #Normalised planck distribution (i.e radiance)
+
+            #Sample each wavelength channeel
             wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,10)
 
             planck_arr = []
-            planck_norm = []
+            planck_norm = []'
+            #Calculate planck functions for each wavelength samples
             for lam in wavelength_sample:
+                #Calculate the planck function for the temperature distribution
                 planck_arr.append(Planck(temp_dist,lam))
+                #Calculate the planck function for 300K (to normalise by)
                 planck_norm.append(Planck(300,lam))
 
+            #Normalised planck distribution (i.e radiance)
             planck_dist = np.trapz(np.array(planck_arr),wavelength_sample,axis=0)/np.trapz(np.array(planck_norm),wavelength_sample)
 
+            #Multiply by column density for flux distribution
             flux_dist = column_density*planck_dist
 
+            #Exozodiacal is the sum over the array of the flux distribution, transmission,
+            #local scale factor and the pixel solid angle
             temp_exozodi.append(np.sum(flux_dist*res*local_scale_factor*solid_angle_pix))
         exozodi.append(temp_exozodi)
 
     return exozodi
-
-
-def azimuthal_max(image,r):
-
-    n_angles = 10000
-    angles = np.linspace(0,2*np.pi,n_angles)
-
-    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
-
-    #Planet out of field of view!
-    if r > image.shape[0]/2:
-        return 0
-
-    max = 0
-    for theta in angles:
-        x = centre[0] + r*np.cos(theta)
-        y = centre[1] + r*np.sin(theta)
-
-        a = image[int(x),int(y)]
-
-        if a > max:
-            max = a
-
-    return max
-
-def azimuthal_rms(image,r):
-
-    n_angles = 10000
-    angles = np.linspace(0,2*np.pi,n_angles)
-
-    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
-
-    #Planet out of field of view!
-    if r > image.shape[0]/2:
-        return 0
-
-    sum = 0
-    for theta in angles:
-        x = centre[0] + r*np.cos(theta)
-        y = centre[1] + r*np.sin(theta)
-
-        a = image[int(x),int(y)]
-
-        sum += a**2
-
-    return np.sqrt(sum/n_angles)
-
-def azimuthal_mean(image,r):
-
-    n_angles = 10000
-    angles = np.linspace(0,2*np.pi,n_angles)
-
-    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
-
-    #Planet out of field of view!
-    if r > image.shape[0]/2:
-        return 0
-
-    sum = 0
-    for theta in angles:
-        x = centre[0] + r*np.cos(theta)
-        y = centre[1] + r*np.sin(theta)
-
-        a = image[int(x),int(y)]
-
-        sum += a
-
-    return sum/n_angles

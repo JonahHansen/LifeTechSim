@@ -5,36 +5,47 @@ import engine.sim_functions as sf
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
+"""
+Compute the relevant signal/noise fluxes for each planet around a given star and store in a dictionary
 
+Inputs:
+    star = star (of star class) to compute fluxes for
+    mode = what mode of the interferometer? 1 = search, 2 = characterisation
+    nuller_response = function to calculate the response maps. Changes depending on what architecture is used
+    base_scale_factor = factor to scale the baseline. Changed based on architecture to optimise the transmission for a given sky angle
+    fov_scale_factor = how large is the field of view? Given as a multiple of the optimised sky angle for a half FOV
+    local_exozodi = the radiance of the local zodiacal background, to calculate the exozodiacal light
+
+Output:
+    dictionary of relevant fluxes and data, to be used in further analysis
+"""
 def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi):
 
     #Define wavelength to fix baseline
     base_wavelength = spec.baseline_wave #
 
-    print("\nCalculating Zodiacal")
-
-    #zodiacal power (phot/s) per telescope
+    #zodiacal background power (phot/s)
     zodiacal = sf.zodiacal_background(star,spec)
-
-    print("\nCalculating Response")
 
     ls_row_data = []
 
+    #SEARCH MODE: array stays in same position per star
     if mode == 1:
+        #Baseline is scaled by an appropriate factor for each architecture to maximise
+        #transmission in the habitable zone
         baseline = base_scale_factor*base_wavelength*rad2mas/star.HZAngle
 
-        #INSERT BASELINE CHECKER BASED ON OPTIMISATION?
-
+        #Half field of view is set as the scale_factor times the HZ angle
         fov = 2*fov_scale_factor*star.HZAngle/rad2mas
-        outputs = nuller_response(baseline,fov,sz,base_wavelength)
-        pix2mas = fov*rad2mas/sz
 
-        print("\nCalculating Exozodiacal")
-        #exozodiacal flux (phot/s/m^2) per telescope
+        #Get response maps
+        outputs = nuller_response(baseline,fov,sz,base_wavelength)
+        pix2mas = fov*rad2mas/sz #number of mas per pixel
+
+        #exozodiacal flux (phot/s/m^2) per kernel
         exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)
 
-        print("\nCalculating Leakage")
-        #Calc stellar leakage flux (phot/s/m^2) per telescope
+        #Calc stellar leakage flux (phot/s/m^2) per kernel
         leakage = sf.stellar_leakage(star,nuller_response,baseline,base_wavelength)
 
         for planet in star.Planets:
@@ -44,9 +55,10 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             wave_pix2mas = pix2mas/base_wavelength
 
             print("\nCalculating Signal")
-            #signal flux (phot/s/m^2) per telescope
+            #signal flux (phot/s/m^2) per kernel
             signal = sf.calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode)
 
+            #shot noise (phot/s/m^2) per kernel
             shot_noise = sf.calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
@@ -63,19 +75,23 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             ls_row_data.append(row_data)
 
-
+    #CHARACTERISATION MODE: array changes position for each planet
     if mode == 2:
         for planet in star.Planets:
+            #Baseline is scaled by an appropriate factor for each architecture to maximise
+            #transmission for the planet
             baseline = base_scale_factor*base_wavelength*rad2mas/planet.PAngSep
-            fov = 2*fov_scale_factor*planet.PAngSep/rad2mas
-            outputs = nuller_response(baseline,fov,sz,base_wavelength)
-            pix2mas = fov*rad2mas/sz
 
-            print("\nCalculating Exozodiacal")
+            #Half field of view is set as the scale_factor times the planet angular separation
+            fov = 2*fov_scale_factor*planet.PAngSep/rad2mas
+
+            #Get response maps
+            outputs = nuller_response(baseline,fov,sz,base_wavelength)
+            pix2mas = fov*rad2mas/sz #number of mas per pixel
+
             #exozodiacal flux (phot/s/m^2) per telescope
             exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)
 
-            print("\nCalculating Leakage")
             #Calc stellar leakage flux (phot/s/m^2) per telescope
             leakage = sf.stellar_leakage(star,nuller_response,baseline,base_wavelength)
 
@@ -83,10 +99,10 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             #multiply by wavelength to get conversion factor for that wavelength
             wave_pix2mas = pix2mas/base_wavelength
 
-            print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per telescope
             signal = sf.calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode)
 
+            #shot noise (phot/s/m^2) per telescope
             shot_noise = sf.calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode)
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,

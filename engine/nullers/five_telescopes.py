@@ -3,16 +3,37 @@ sys.path.append("../..")
 import numpy as np
 from opticstools import knull
 
-#The baseline given to this function is the one that defines the side length of the pentagon
-#Scale the argument to this function appropriately if defining baselines based on diagonals
+
+"""
+Calculates the positions of five telescopes in a regular pentagonal formation.
+
+Inputs:
+    baseline = the shorter baseline (distance between adjacent telescopes)
+Output:
+    List of x positions and list of y positions
+"""
 def pentagon(baseline):
-    R = 0.85065*baseline
-    angles = np.linspace(0,2*np.pi,6)
+    R = 0.85065*baseline #To the radius of the pentagon
+    angles = np.linspace(0,2*np.pi,6) #Angular positions of the telescopes
+    #To cartesian
     xs = R*np.cos(angles)
     ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
 
+"""
+Function to calculate the response map of a five telescope kernel nuller interferometer.
 
+Inputs:
+    baseline = length of the shorter baseline in meters (adjacent telescopes)
+    fov = total field of view of the interferometer in radians
+    sz = size of the array
+    base_wavelength = wavelength upon which the baseline is optimised. In meters
+
+Outputs:
+    List of modulation maps of the form:
+        (Transmission map, Kernel map)
+    The transmission map is one of the nulled outputs that is chosen to create the kernel.
+"""
 def get_nuller_response(baseline,fov,sz,base_wavelength):
 
     N = knull.make_nuller_mat5()
@@ -33,14 +54,13 @@ def get_nuller_response(baseline,fov,sz,base_wavelength):
     for i in range(5):
         for k in range(5):
             #Inputs have a phase equal to xy array - linear multiplied by spatial frequency
-            #ul + vm?
+            #ul + vm
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
-    response = np.abs(response)**2
+    response = np.abs(response)**2 #To intensity
     response /= (np.max(response[0])/5) #normalise by flux per telescope
 
-    #Create the kernel nulls. This is turning the output intensities into the kernel nulls (K in 2018 paper)
-
+    #This is turning the output intensities into the kernel nulls (K in 2018 paper)
     k1 = response[1]-response[4]
     k2 = response[2]-response[3]
 

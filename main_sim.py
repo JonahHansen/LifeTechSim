@@ -30,6 +30,10 @@ Mode
  2 = Charaterisation (optimised planet position, no spinning)
 
 Base_wave = wavelength to base the optimisation on
+
+out_file = output filename
+
+first_run = run planet retrieval (to convert from PPop file) or import from pickle?
 """
 architecture = int(sys.argv[1])
 mode = int(sys.argv[2])
@@ -44,14 +48,16 @@ min_wave = 3 #microns
 max_wave = 18 #microns
 num_channels = 10
 
+#input planet data
 planet_path = "PPop/LifeTechSimTestPlanetPopulation.txt"
 
-number_processes = 28
+number_processes = 28 #parallelise?
 #####################################################
 
+#Set up the spectral parameters
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 
-#Set architecture
+#Set architecture, and define the baseline scale factor
 if architecture == 1:
     from engine.nullers.bracewell import get_nuller_response
     architecture_verbose = "Bracewell four telescope nuller"
@@ -95,11 +101,11 @@ else:
     raise Exception("Architecture not recognised")
 
 #Set modes
-if mode == 1:
+if mode == 1: #search
     sz = 1500
     mode_verbose = "Search"
     fov_scale_factor = 5
-elif mode == 2:
+elif mode == 2: #characterisation
     sz = 600
     mode_verbose = "Characterisation"
     fov_scale_factor = 2
@@ -125,13 +131,12 @@ local_exozodi = calc_local_zodiacal_minimum(spec)
 
 #RUN!!
 
+#Multiprocessing
 def worker_func(star):
     return compute(star,mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
 
 pool = Pool(processes=number_processes)
-
 ls_star_data = pool.map(worker_func,star_list)
-
 pool.close()
 
 #Make into one list of dictionaries
@@ -159,6 +164,7 @@ main_dict = {
     "results":dict_ls
 }
 
+#Needed for writing JSON
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):

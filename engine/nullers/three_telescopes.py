@@ -3,15 +3,35 @@ sys.path.append("../..")
 import numpy as np
 from opticstools import knull
 
-#The baseline is the distance between adjacent spacecraft
+"""
+Calculates the positions of five telescopes in an equilateral triangle formation.
+
+Inputs:
+    baseline = the distance between adjacent telescopes
+Output:
+    List of x positions and list of y positions
+"""
 def triangle(baseline):
-    R = 0.5773*baseline
-    angles = np.linspace(0,2*np.pi,4)
+    R = 0.5773*baseline #Convert to circumcircle radius
+    angles = np.linspace(0,2*np.pi,4) #angular coordinates of the telescopes
     xs = R*np.cos(angles)
     ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
 
+"""
+Function to calculate the response map of a three telescope kernel nuller interferometer.
 
+Inputs:
+    baseline = length of the baseline in meters
+    fov = total field of view of the interferometer in radians
+    sz = size of the array
+    base_wavelength = wavelength upon which the baseline is optimised. In meters
+
+Outputs:
+    List of modulation maps of the form:
+        (Transmission map, Kernel map)
+    The transmission map is one of the nulled outputs that is chosen to create the kernel.
+"""
 def get_nuller_response(baseline,fov,sz,base_wavelength):
 
     N = knull.make_nuller_mat3_JH()
@@ -32,12 +52,10 @@ def get_nuller_response(baseline,fov,sz,base_wavelength):
     for i in range(3):
         for k in range(3):
             #Inputs have a phase equal to xy array - linear multiplied by spatial frequency
-            #ul + vm?
+            #ul + vm
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
-    response = np.abs(response)**2
-
-    #import pdb; pdb.set_trace()
+    response = np.abs(response)**2 #To intensity
 
     response /= (np.max(response[0])/3) #normalise by flux per telescope
 
