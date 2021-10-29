@@ -44,3 +44,15 @@ python main_sim.py 8 1 15 avatar_test_8_1_15.json False
 python main_sim.py 8 2 15 avatar_test_8_2_15.json False
 python main_sim.py 8 1 18 avatar_test_8_1_18.json False
 python main_sim.py 8 2 18 avatar_test_8_2_18.json False
+python main_sim.py 9 1 10 avatar_test_9_1_10.json False
+python main_sim.py 9 2 10 avatar_test_9_2_10.json False
+python main_sim.py 9 1 15 avatar_test_9_1_15.json False
+python main_sim.py 9 2 15 avatar_test_9_2_15.json False
+python main_sim.py 9 1 18 avatar_test_9_1_18.json False
+python main_sim.py 9 2 18 avatar_test_9_2_18.json False
+python main_sim.py 10 1 10 avatar_test_10_1_10.json False
+python main_sim.py 10 2 10 avatar_test_10_2_10.json False
+python main_sim.py 10 1 15 avatar_test_10_1_15.json False
+python main_sim.py 10 2 15 avatar_test_10_2_15.json False
+python main_sim.py 10 1 18 avatar_test_10_1_18.json False
+python main_sim.py 10 2 18 avatar_test_10_2_18.json False

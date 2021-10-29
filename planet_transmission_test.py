@@ -121,6 +121,16 @@ elif architecture == 8:
     architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
     base_scale_factor = 0.660 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
+elif architecture == 9: #THESE ARE ALTERNATIVES - MAY BE BETTER!
+    from engine.nullers.five_telescopes import get_nuller_response
+    architecture_verbose = "Five telescope kernel nuller, optimised for adjacent telescopes (K1)"
+    base_scale_factor = 2.67
+
+elif architecture == 10:
+    from engine.nullers.five_telescopes import get_nuller_response
+    architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
+    base_scale_factor = 1.68 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
+
 
 #baseline, fov defined as in the normal simulation
 baseline = base_scale_factor*wavelength*rad2mas/HZAngle
