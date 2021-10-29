@@ -253,13 +253,15 @@ def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
 
             if mode == 2:
                 #Characterisation mode is maximum of kernel azimuth
-                p_flux_angle_array = azimuthal_array(ker,planet_pos)*flux
+                p_flux_angle_array = np.abs(azimuthal_array(ker,planet_pos))*flux
                 temp_signal.append(p_flux_angle_array)
 
-        signal.append(temp_signal)
+        signal.append(np.array(temp_signal))
 
     if mode == 2:
-        summed_signal = np.sum(np.array(signal),axis=(0,1))
+        #import pdb; pdb.set_trace()
+        signal = np.array(signal)
+        summed_signal = np.sum(signal,axis=(0,1))
         arg = np.argmax(summed_signal)
         signal = signal[:,:,arg]
 
@@ -298,13 +300,15 @@ def calc_shot_noise(outputs,planet,wave_pix2mas,spec,mode):
 
             if mode == 2:
                 #Characterisation mode is maximum of kernel azimuth
-                p_flux_angle_array = azimuthal_array(res,planet_pos)*flux
+                p_flux_angle_array = np.abs(azimuthal_array(res,planet_pos))*flux
                 temp_shot_noise.append(p_flux_angle_array)
 
-        shot_noise.append(temp_shot_noise)
+        shot_noise.append(np.array(temp_shot_noise))
+
 
     if mode == 2:
-        summed_shot = np.sum(np.array(shot_noise),axis=(0,1))
+        shot_noise = np.array(shot_noise)
+        summed_shot = np.sum(shot_noise,axis=(0,1))
         arg = np.argmax(summed_shot)
         shot_noise = shot_noise[:,:,arg]
 
@@ -515,7 +519,7 @@ def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
             wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,10)
 
             planck_arr = []
-            planck_norm = []'
+            planck_norm = []
             #Calculate planck functions for each wavelength samples
             for lam in wavelength_sample:
                 #Calculate the planck function for the temperature distribution

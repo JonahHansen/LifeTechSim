@@ -106,9 +106,9 @@ if mode == 1: #search
     mode_verbose = "Search"
     fov_scale_factor = 5
 elif mode == 2: #characterisation
-    sz = 600
+    sz = 800
     mode_verbose = "Characterisation"
-    fov_scale_factor = 2
+    fov_scale_factor = base_wave/spec.channel_centres[0] + 0.1
 else:
     raise Exception("Mode not recognised")
 
