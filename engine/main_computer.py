@@ -63,15 +63,16 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
-                        "star_type":star.Stype,"star_distance (pc)":star.Dist,"baseline (m)":baseline,
-                        "array_angle (mas)":star.HZAngle, "planet_angle (mas)":planet.PAngSep,
-                        "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
-                        "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,
-                        "signal (ph/s/m2)":signal,
-                        "shot (ph/s/m2)":shot_noise,
-                        "leakage (ph/s/m2)":leakage,
-                        "exozodiacal (ph/s/m2)":exozodiacal,
-                        "zodiacal (ph/s)":zodiacal}
+                        "star_type":star.Stype,"star_distance":star.Dist,"baseline":baseline,
+                        "array_angle":star.HZAngle, "planet_angle":planet.PAngSep,
+                        "star_flux":star.flux,"planet_flux":planet.flux,
+                        "planet_temp":planet.PTemp,"planet_radius":planet.PRad,
+                        "habitable":planet.isHZ,
+                        "signal":signal,
+                        "shot":shot_noise,
+                        "leakage":leakage,
+                        "exozodiacal":exozodiacal,
+                        "zodiacal":zodiacal}
 
             ls_row_data.append(row_data)
 
@@ -107,15 +108,16 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
-                        "star_type":star.Stype,"star_distance (pc)":star.Dist,"baseline (m)":baseline,
-                        "array_angle (mas)":planet.PAngSep, "planet_angle (mas)":planet.PAngSep,
-                        "star_flux (ph/s/m2)":star.flux,"planet_flux (ph/s/m2)":planet.flux,
-                        "planet_temp (K)":planet.PTemp,"planet_radius (Earth_Rad)":planet.PRad,
-                        "signal (ph/s/m2)":signal,
-                        "shot (ph/s/m2)":shot_noise,
-                        "leakage (ph/s/m2)":leakage,
-                        "exozodiacal (ph/s/m2)":exozodiacal,
-                        "zodiacal (ph/s)":zodiacal}
+                        "star_type":star.Stype,"star_distance":star.Dist,"baseline":baseline,
+                        "array_angle":planet.PAngSep, "planet_angle":planet.PAngSep,
+                        "star_flux":star.flux,"planet_flux":planet.flux,
+                        "planet_temp":planet.PTemp,"planet_radius":planet.PRad,
+                        "habitable":planet.isHZ,
+                        "signal":signal,
+                        "shot":shot_noise,
+                        "leakage":leakage,
+                        "exozodiacal":exozodiacal,
+                        "zodiacal":zodiacal}
 
             ls_row_data.append(row_data)
 

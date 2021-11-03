@@ -49,7 +49,7 @@ max_wave = 18 #microns
 num_channels = 10
 
 #input planet data
-planet_path = "PPop/LifeTechSimTestPlanetPopulation.txt"
+planet_path = "PPop/LifeTechSimPlanetPopulation.txt"
 
 number_processes = 28 #parallelise?
 #####################################################
@@ -117,7 +117,7 @@ if mode == 1: #search
     mode_verbose = "Search"
     fov_scale_factor = 5
 elif mode == 2: #characterisation
-    sz = 800
+    sz = 600
     mode_verbose = "Characterisation"
     fov_scale_factor = base_wave/spec.channel_centres[0] + 0.1
 else:

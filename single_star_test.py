@@ -20,7 +20,7 @@ elif mode == 2:
 
 
 #Run planet retrieval (to convert from PPop file), or load pickled file?
-first_run = False
+first_run = True
 if first_run:
 
     star_list = RPD(planet_path,spec)

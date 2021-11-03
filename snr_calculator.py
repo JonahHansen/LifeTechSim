@@ -32,7 +32,7 @@ Inputs:
 Outputs:
     List of SNRs for each kernel and wavelength
 """
-def grab_SNR_per_kernel(dict,D,t,eta):
+def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1):
 
     A = np.pi*D**2/4
 
@@ -40,7 +40,7 @@ def grab_SNR_per_kernel(dict,D,t,eta):
     shot = np.array(dict["shot (ph/s/m2)"])*A*t*eta
     leakage = np.array(dict["leakage (ph/s/m2)"])*A*t*eta
     exozodiacal = np.array(dict["exozodiacal (ph/s/m2)"])*A*t*eta
-    zodiacal = np.array(dict["zodiacal (ph/s)"])*t*eta
+    zodiacal = np.array(dict["zodiacal (ph/s)"])*t*eta*zod_fac
 
     return SNR(signal, shot, leakage, zodiacal, exozodiacal)
 
@@ -108,10 +108,10 @@ Inputs:
 Outputs:
     List of SNRs for each kernel and wavelength
 """
-def calc_SNR_hist(results,D,t,eta):
+def calc_SNR_hist(results,D,t,eta,zod_fac=1):
     SNR_arr = []
     for item in results:
-        temp_snr_arr = grab_SNR_per_kernel(item,D,t,eta)
+        temp_snr_arr = grab_SNR_per_kernel(item,D,t,eta,zod_fac)
         SNR_arr.append(total_SNR(temp_snr_arr))
 
     print(np.sum(np.array(SNR_arr)>5))
@@ -141,10 +141,10 @@ Output:
 def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_data):
     prefix = "out_data/avatar_test"
     mode_names = ["Search","Characterisation"]
-    arch = [1,3,4,7,8]
+    arch = [1,3,4,7,8,9,10]
     wavelengths = [10,15,18]
-    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2"]
-    arch_num_tel = [4,3,4,5,5]
+    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2","Five_telescopes_K12","Five_telescopes_K22"]
+    arch_num_tel = [4,3,4,5,5,5,5]
 
     #Baseline limits
     baseline_min = 10
@@ -165,7 +165,10 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
             SNR_key.append(item['planet_name'])
 
             #Get SNR
-            temp_snr_arr = grab_SNR_per_kernel(item,D,t,eta)
+            if a == 4:
+                temp_snr_arr = grab_SNR_per_kernel(item,D,t,eta,0.5)
+            else:
+                temp_snr_arr = grab_SNR_per_kernel(item,D,t,eta)
             total = total_SNR(temp_snr_arr)
 
             #Make SNR 0 if outside the allowable baselines
@@ -200,10 +203,10 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
 def get_data_one_planet(planet_index,mode,wave_index):
     prefix = "out_data/avatar_test"
     mode_names = ["Search","Characterisation"]
-    arch = [1,3,4,7,8]
+    arch = [1,3,4,7,8,9,10]
     wavelengths = [10,15,18]
-    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2"]
-    arch_num_tel = [4,3,4,5,5]
+    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2","Five_telescopes_K12","Five_telescopes_K22"]
+    arch_num_tel = [4,3,4,5,5,5,5]
 
     D = 2
     t = 3600
@@ -218,15 +221,21 @@ def get_data_one_planet(planet_index,mode,wave_index):
 
     result_dict = {}
     SNR_arr = []
+    tot_SNR_arr = []
     for j,a in enumerate(arch):
         #Create list of dictionaries and sort them
         results = load_results(prefix,a,mode,wavelengths[wave_index])
         results.sort(key=lambda item: item.get("planet_name"))
 
         result_dict.update({arch_names[j]:results[planet_index]})
-        SNR_arr.append(grab_SNR_per_kernel(results[planet_index],D,t,eta))
+        if a == 4:
+            temp_snr_arr = grab_SNR_per_kernel(results[planet_index],D,t,eta,0.5)
+        else:
+            temp_snr_arr = grab_SNR_per_kernel(results[planet_index],D,t,eta)
+        SNR_arr.append(temp_snr_arr)
+        tot_SNR_arr.append(total_SNR(temp_snr_arr))
 
-    return result_dict, SNR_arr
+    return result_dict, SNR_arr, tot_SNR_arr
 
 """
 Make a pie chart of the architecture with best SNR over all planets

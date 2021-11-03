@@ -72,8 +72,8 @@ class Star():
             flux_ls.append(quad(flux_function,wave,wave+spectrograph.dlambda)[0])
         self.flux = np.array(flux_ls)
 
-        self.HZMin = HzMin #Outer? limit on HZ
-        self.HZMax = HzMax #Inner? limit on HZ
+        self.HZOut = HzMin #Outer? limit on HZ
+        self.HZIn = HzMax #Inner? limit on HZ
         self.HZAngle = (0.5*(HzMin + HzMax)*au/(Dist*pc))*rad2mas #Average projected angle of HZ
 
         self.Exzod = z #Exozodiacal light level
@@ -151,6 +151,8 @@ class Planet():
         self.PrSep = rSep #Physical separation of planet in au
         self.PAngSep = AngSep*1000 #Projected angular sep in milliarcsec
         self.PmaxAngSep = maxAngSep*1000 #Max projected angular sep in milliarcsec
+
+        self.isHZ = a < star.HZOut and a > star.HZIn
 
         self.IncFlux = F #Incident stellar flux in SEarth
         self.LamRef = f #Lambertian reflectance
