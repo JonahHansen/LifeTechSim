@@ -1,5 +1,5 @@
 ##### Select resources #####
-#PBS -N LIFESim
+#PBS -N LIFETechSim
 #PBS -l ncpus=28
 
 ##### Queue #####
