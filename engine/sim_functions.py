@@ -98,7 +98,7 @@ Outputs:
 """
 def azimuthal_max(image,r):
 
-    n_angles = 10000
+    n_angles = 5000
     angles = np.linspace(0,2*np.pi,n_angles)
 
     centre = (int(image.shape[0]/2),int(image.shape[1]/2))
@@ -132,7 +132,7 @@ Outputs:
 """
 def azimuthal_array(image,r):
 
-    n_angles = 10000
+    n_angles = 5000
     angles = np.linspace(0,2*np.pi,n_angles)
 
     centre = (int(image.shape[0]/2),int(image.shape[1]/2))
@@ -165,7 +165,7 @@ Outputs:
 """
 def azimuthal_rms(image,r):
 
-    n_angles = 10000
+    n_angles = 5000
     angles = np.linspace(0,2*np.pi,n_angles)
 
     centre = (int(image.shape[0]/2),int(image.shape[1]/2))
@@ -199,7 +199,7 @@ Outputs:
 """
 def azimuthal_mean(image,r):
 
-    n_angles = 10000
+    n_angles = 5000
     angles = np.linspace(0,2*np.pi,n_angles)
 
     centre = (int(image.shape[0]/2),int(image.shape[1]/2))

@@ -8,7 +8,7 @@ from multiprocessing import Pool
 import json
 import sys
 
-if len(sys.argv) != 6:
+if len(sys.argv) != 4:
     raise Exception("Wrong number of arguments")
 
 #####################################################
@@ -36,10 +36,8 @@ out_file = output filename
 first_run = run planet retrieval (to convert from PPop file) or import from pickle?
 """
 architecture = int(sys.argv[1])
-mode = int(sys.argv[2])
-base_wave = float(sys.argv[3]) #microns
-out_file = str(sys.argv[4])
-first_run = bool(sys.argv[5])
+base_wave = float(sys.argv[2]) #microns
+out_file = str(sys.argv[3])
 
 #####################################################
 #Secondary parameters
@@ -111,29 +109,11 @@ elif architecture == 10:
 else:
     raise Exception("Architecture not recognised")
 
-#Set modes
-if mode == 1: #search
-    sz = 1500
-    mode_verbose = "Search"
-    fov_scale_factor = 5
-elif mode == 2: #characterisation
-    sz = 800
-    mode_verbose = "Characterisation"
-    fov_scale_factor = base_wave/spec.channel_centres[0] + 0.1
-else:
-    raise Exception("Mode not recognised")
+sz = 1500
+mode_verbose = "Search"
+fov_scale_factor = 5
 
 ###########################################################################
-
-def HZ_lim(Teff):
-    S0in, S0out = 1.7665, 0.3240
-    Ain, Aout = 1.3351E-4, 5.3221E-5
-    Bin, Bout = 3.1515E-9, 1.4288E-9
-    Cin, Cout = -3.3488E-12, -1.1049E-12
-    T = Teff-5780. # K
-    HZin = S0in+Ain*T+Bin*T**2+Cin*T**3 # au
-    HZout = S0out+Aout*T+Bout*T**2+Cout*T**3 # au
-    return HZin, HZout
 
 #Tau boo coordinates (ecliptic latitude of 26 degress)
 ra = 206.81560195
@@ -146,8 +126,7 @@ def Beta_Pic(dist):
     rad = 1.8
     teff = 8052
     mass = 1.75
-    HZin, HZout = HZ_lim(teff)
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,HZin,HZout,z)
+    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Tau_Boo(dist):
     name = "Tau Boo analogue"
@@ -155,8 +134,7 @@ def Tau_Boo(dist):
     rad = 1.42
     teff = 6399
     mass = 1.39
-    HZin, HZout = HZ_lim(teff)
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,HZin,HZout,z)
+    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Sun(dist):
     name = "Solar analogue"
@@ -164,8 +142,7 @@ def Sun(dist):
     rad = 1
     teff = 5772
     mass = 1
-    HZin, HZout = HZ_lim(teff)
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,HZin,HZout,z)
+    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Eps_Eri(dist):
     name = "Epsilon Eri analogue"
@@ -173,8 +150,7 @@ def Eps_Eri(dist):
     rad = 0.735
     teff = 5084
     mass = 0.82
-    HZin, HZout = HZ_lim(teff)
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,HZin,HZout,z)
+    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Prox_Cen(dist):
     name = "Proxima Cen analogue"
@@ -182,10 +158,9 @@ def Prox_Cen(dist):
     rad = 0.15
     teff = 3042
     mass = 0.12
-    HZin, HZout = HZ_lim(teff)
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,HZin,HZout,z)
+    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
-def planet(star,num,a):
+def myPlanet(star,num,a):
 
     #Earth twin
     PRad = 1
@@ -193,21 +168,21 @@ def planet(star,num,a):
     Temp = 300
 
     Ageom = 0.1 #Rough estimate?
-    AngSep = a/star.Dist*1000
+    AngSep = a/star.Dist
     lam_ref = 0.318 #From PPop, assuming face on orbit (inc = 0)
 
     return Planet(star,0,star.SNumber,num,PRad,PMass,365,0,0,0,0,0,0,0,Ageom,a,a,AngSep,0,0,lam_ref,Temp,spec)
 
 def append_planet_list(star):
     planet_inner = myPlanet(star,1,star.HZIn)
-    planet_mid = myPlanet(star,2,star.HZEst)
+    planet_mid = myPlanet(star,2,star.HZMid)
     planet_outer = myPlanet(star,3,star.HZOut)
 
     star.Planets = [planet_inner,planet_mid,planet_outer]
     return star
 
 
-dists = np.linspace(1,20,50)
+dists = np.linspace(1,20,100)
 
 star_list = []
 for d in dists:
@@ -217,10 +192,8 @@ for d in dists:
     star_list.append(append_planet_list(Eps_Eri(d)))
     star_list.append(append_planet_list(Prox_Cen(d)))
 
-import pdb; pdb.set_trace()
 
 ###########################################################################
-
 
 #Get local zodi minimum
 local_exozodi = calc_local_zodiacal_minimum(spec)
@@ -229,7 +202,7 @@ local_exozodi = calc_local_zodiacal_minimum(spec)
 
 #Multiprocessing
 def worker_func(star):
-    return compute(star,mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
+    return compute(star,1,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
 
 pool = Pool(processes=number_processes)
 ls_star_data = pool.map(worker_func,star_list)

@@ -45,9 +45,7 @@ class Star():
                  Mass, # Msun
                  RA, # deg
                  Dec, # deg
-                 spectrograph, #Class holding spectral info
-                 HzMin, #au
-                 HzMax, #au
+                 spectrograph, #Class holding spectral info\
                  z #exozodis
                  ):
 
@@ -72,21 +70,23 @@ class Star():
             flux_ls.append(quad(flux_function,wave,wave+spectrograph.dlambda)[0])
         self.flux = np.array(flux_ls)
 
-        self.HZOut = HzMin #Outer? limit on HZ
-        self.HZIn = HzMax #Inner? limit on HZ
-        self.HZAngle = (0.5*(HzMin + HzMax)*au/(Dist*pc))*rad2mas #Average projected angle of HZ
-
         self.Exzod = z #Exozodiacal light level
 
         self.SLum = Luminosity(Teff,Rad) #Luminosity in Lsol
 
         parallax_mas = 1000/Dist
 
-        self.HZEst = np.sqrt(self.SLum)*parallax_mas #Estimate of HZ from Luminosity
+        Hz_in, Hz_out = self.calc_HZ_limits()
+
+        self.HZIn = Hz_in
+        self.HZOut = Hz_out
+        self.HZMid = 0.5*(Hz_out + Hz_in)
+        self.HZAngle = self.HZMid*parallax_mas #Average projected angle of HZ in mas
 
         self.angRad = Rad/215*parallax_mas #angular radius of star in mas
 
         self.Planets = [] #List of planets associated with the star (multiple universes)
+
 
     def star_flux_func(self):
         #Function to calculate the flux of star at a given wavelength
@@ -98,6 +98,21 @@ class Star():
             B = const*p(lam) #photons/m^2/s/m
             return B
         return func
+
+    #From Kopparapu and Ramirez 2013
+    def calc_HZ_limits(self): #Roughly recent Venus and early Mars
+
+        S0in, S0out = 1.7665, 0.3240
+        Ain, Aout = 1.3351E-4, 5.3221E-5
+        Bin, Bout = 3.1515E-9, 1.4288E-9
+        Cin, Cout = -3.3488E-12, -1.1049E-12
+        T = self.STeff-5780. # K
+        Sin = S0in+Ain*T+Bin*T**2+Cin*T**3
+        Sout = S0out+Aout*T+Bout*T**2+Cout*T**3
+
+        r_in = np.sqrt(self.SLum/Sin)
+        r_out = np.sqrt(self.SLum/Sout)
+        return r_in, r_out
 
 
 class Planet():
@@ -210,7 +225,7 @@ def RetrievePlanetData(planet_path,spectrograph):
     #Get planet data from PPop
     planet_data = PlanetPopulation(planet_path)
     #Get HZ data
-    planet_data.ComputeHZ(Model='MS')
+    #planet_data.ComputeHZ(Model='MS')
     #Attach photometry
     #planet_data.appendPhotometry(phot_path,"tag")
 
@@ -231,8 +246,6 @@ def RetrievePlanetData(planet_path,spectrograph):
                 planet_data.RA[0],
                 planet_data.Dec[0],
                 spectrograph,
-                planet_data.HZin[0],
-                planet_data.HZout[0],
                 planet_data.z[0]
                 )
 
@@ -259,8 +272,6 @@ def RetrievePlanetData(planet_path,spectrograph):
                         planet_data.RA[i],
                         planet_data.Dec[i],
                         spectrograph,
-                        planet_data.HZin[i],
-                        planet_data.HZout[i],
                         planet_data.z[i]
                         )
             star_list.append(star)
