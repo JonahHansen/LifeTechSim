@@ -516,7 +516,7 @@ def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
 
 
             #Sample each wavelength channeel
-            wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,10)
+            wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,5)
 
             planck_arr = []
             planck_norm = []
