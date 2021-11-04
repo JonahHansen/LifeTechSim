@@ -3,6 +3,7 @@ import pickle
 from engine.main_computer import compute
 from engine.sim_functions import calc_local_zodiacal_minimum,Spectrograph
 from engine.planet_retrieval import RetrievePlanetData as RPD
+from snr_calculator import total_SNR, grab_SNR_per_kernel
 
 #Main parameters
 mode = 1 #1 is search mode, 2 is characterisation mode
@@ -84,4 +85,9 @@ star_index = 2
 #run
 star_data = compute(star_list[star_index],mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)
 
-print(star_data)
+snr_arr=[]
+for dict in star_data:
+    kernel_snr = grab_SNR_per_kernel()
+    snr_arr.append(total_SNR(kernel_snr))
+
+print(snr_arr)
