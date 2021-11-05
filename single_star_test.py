@@ -6,8 +6,8 @@ from engine.planet_retrieval import RetrievePlanetData as RPD
 from snr_calculator import total_SNR, grab_SNR_per_kernel
 
 #Main parameters
-mode = 1 #1 is search mode, 2 is characterisation mode
-architecture = 1
+mode = 2 #1 is search mode, 2 is characterisation mode
+architecture = 7
 main_wave = 15
 spec = Spectrograph(3,18,main_wave,10) #min,max,baseline_wavelength,num_channels
 planet_path = "PPop/TestPlanetPopulation2.txt" #Input planet data
@@ -21,7 +21,7 @@ elif mode == 2:
 
 
 #Run planet retrieval (to convert from PPop file), or load pickled file?
-first_run = True
+first_run = False
 if first_run:
 
     star_list = RPD(planet_path,spec)
@@ -47,6 +47,7 @@ if architecture == 1:
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
     architecture_verbose = "Linear four telescope nuller"
+    base_scale_factor = 1
 
 elif architecture == 3:
     from engine.nullers.three_telescopes import get_nuller_response
@@ -61,7 +62,7 @@ elif architecture == 4:
 elif architecture == 5:
     from engine.nullers.four_telescopes import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller, optimised for K2"
-    base_scale_factor = 0.4
+    base_scale_factor = 1
 
 elif architecture == 6:
     from engine.nullers.four_telescopes import get_nuller_response
@@ -87,7 +88,10 @@ star_data = compute(star_list[star_index],mode,get_nuller_response,spec,sz,base_
 
 snr_arr=[]
 for dict in star_data:
-    kernel_snr = grab_SNR_per_kernel()
+    if architecture == (4 or 6):
+        kernel_snr = grab_SNR_per_kernel(dict,2,3600,0.1,0.5)
+    else:
+        kernel_snr = grab_SNR_per_kernel(dict,2,3600,0.1,1)
     snr_arr.append(total_SNR(kernel_snr))
 
 print(snr_arr)

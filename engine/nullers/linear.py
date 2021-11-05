@@ -43,23 +43,22 @@ def guyon_fig6_mat4(phase_shifters=np.array([1,1,1], dtype=complex), ker_coupler
     for ix,phasor in enumerate(phase_shifters):
         MM0[ix+1] *= phasor
 
-    if ker_only:
-        MM1 = np.zeros( (7,4), dtype=complex)
-        #Start with the bright output.
-        MM1[0] = MM0[0]
+    MM1 = np.zeros( (7,4), dtype=complex)
+    #Start with the bright output.
+    MM1[0] = MM0[0]
 
-        #Now lets take the three nulled outputs, and put each of these into a 2x2-coupler.
-        PHI0 = np.exp(1j*ker_coupler_angle)
-        PHI1 = np.conj(PHI0)
+    #Now lets take the three nulled outputs, and put each of these into a 2x2-coupler.
+    PHI0 = np.exp(1j*ker_coupler_angle)
+    PHI1 = np.conj(PHI0)
 
-        MM1[1] = (MM0[1] + PHI0*MM0[2]) / 2
-        MM1[2] = (-PHI1*MM0[1] + MM0[2]) / 2
+    MM1[1] = (MM0[1] + PHI0*MM0[2]) / 2
+    MM1[2] = (-PHI1*MM0[1] + MM0[2]) / 2
 
-        MM1[3] = (MM0[1] + PHI0*MM0[3]) / 2
-        MM1[4] = (-PHI1*MM0[1] + MM0[3]) / 2
+    MM1[3] = (MM0[1] + PHI0*MM0[3]) / 2
+    MM1[4] = (-PHI1*MM0[1] + MM0[3]) / 2
 
-        MM1[5] = (MM0[2] + PHI0*MM0[3]) / 2
-        MM1[6] = (-PHI1*MM0[2] + MM0[3]) / 2
+    MM1[5] = (MM0[2] + PHI0*MM0[3]) / 2
+    MM1[6] = (-PHI1*MM0[2] + MM0[3]) / 2
 
     return MM1
 
@@ -78,12 +77,12 @@ Outputs:
         (Transmission map, Kernel map)
     The transmission map is one of the nulled outputs that is chosen to create the kernel.
 """
-def get_nuller_response(baseline,fov,sz,base_wavelength,ratio=1.69):
+def get_nuller_response(baseline,fov,sz,base_wavelength):
 
     #Nulling matrix from Martinache and Ireland (2008) paper
     M = guyon_fig6_mat4()
 
-    telescope_array = linear(baseline,ratio)
+    telescope_array = linear(baseline)
 
     sky_angles = np.linspace(-fov/2,fov/2,sz)
 

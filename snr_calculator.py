@@ -36,11 +36,11 @@ def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1):
 
     A = np.pi*D**2/4
 
-    signal = np.array(dict["signal (ph/s/m2)"])*A*t*eta
-    shot = np.array(dict["shot (ph/s/m2)"])*A*t*eta
-    leakage = np.array(dict["leakage (ph/s/m2)"])*A*t*eta
-    exozodiacal = np.array(dict["exozodiacal (ph/s/m2)"])*A*t*eta
-    zodiacal = np.array(dict["zodiacal (ph/s)"])*t*eta*zod_fac
+    signal = np.array(dict["signal"])*A*t*eta
+    shot = np.array(dict["shot"])*A*t*eta
+    leakage = np.array(dict["leakage"])*A*t*eta
+    exozodiacal = np.array(dict["exozodiacal"])*A*t*eta
+    zodiacal = np.array(dict["zodiacal"])*t*eta*zod_fac
 
     return SNR(signal, shot, leakage, zodiacal, exozodiacal)
 
@@ -173,7 +173,7 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
 
             #Make SNR 0 if outside the allowable baselines
             if baseline_lim:
-                baseline = item['baseline (m)']
+                baseline = item['baseline']
                 if baseline < baseline_min or baseline > baseline_max:
                     total = 0
 
@@ -190,8 +190,8 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
         dist = []
         for item in results:
             type.append(item["star_type"])
-            planet_sep.append(item['planet_angle (mas)'])
-            dist.append(item["star_distance (pc)"])
+            planet_sep.append(item['planet_angle'])
+            dist.append(item["star_distance"])
         ls_ser.append(pd.Series(type, index=SNR_key, copy=False, name="star_type"))
         ls_ser.append(pd.Series(planet_sep, index=SNR_key, copy=False, name="planet_sep"))
         ls_ser.append(pd.Series(dist, index=SNR_key, copy=False, name="dist"))

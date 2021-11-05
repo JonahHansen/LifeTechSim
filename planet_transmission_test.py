@@ -67,7 +67,7 @@ def azimuthal_max(image,r):
 
     return max
 ######################
-architecture = 1
+architecture = 5
 
 wavelength = 15e-6 #m
 sz = 400 #Size of grid
@@ -102,7 +102,7 @@ elif architecture == 4:
     base_scale_factor = 0.4
 
 elif architecture == 5:
-    from engine.nullers.four_telescopes import get_nuller_response
+    from engine.nullers.linear import get_nuller_response
     architecture_verbose = "Four telescope kernel nuller, optimised for K2"
     base_scale_factor = 0.4
 
