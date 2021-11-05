@@ -134,7 +134,7 @@ def Tau_Boo(dist):
     rad = 1.42
     teff = 6399
     mass = 1.39
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
+    return Star(name,2,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Sun(dist):
     name = "Solar analogue"
@@ -142,7 +142,7 @@ def Sun(dist):
     rad = 1
     teff = 5772
     mass = 1
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
+    return Star(name,3,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Eps_Eri(dist):
     name = "Epsilon Eri analogue"
@@ -150,7 +150,7 @@ def Eps_Eri(dist):
     rad = 0.735
     teff = 5084
     mass = 0.82
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
+    return Star(name,4,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def Prox_Cen(dist):
     name = "Proxima Cen analogue"
@@ -158,7 +158,7 @@ def Prox_Cen(dist):
     rad = 0.15
     teff = 3042
     mass = 0.12
-    return Star(name,1,dist,stype,rad,teff,mass,ra,dec,spec,z)
+    return Star(name,5,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
 def myPlanet(star,num,a):
 

@@ -28,11 +28,18 @@ Inputs:
     D = telescope diameter (m)
     t = exposure time (s)
     eta = throughput
+    zod_fac = factor to divide zodiacal light by (for four telescope kernel nuller)
+    const_total_area = whether to keep total area of array the same across different numbers
+        of telescopes. Assumes that the telescope diameter is attributed to a four telescope array
+    num_telescopes = number of telescopes in array (only used in const_total_area)
 
 Outputs:
     List of SNRs for each kernel and wavelength
 """
-def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1):
+def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telescopes=4):
+
+    if const_total_area:
+        D *= np.sqrt(4/num_telescopes)
 
     A = np.pi*D**2/4
 
@@ -57,6 +64,10 @@ Output:
 def total_SNR(SNR_array):
     return np.sqrt(np.sum(SNR_array**2))
 
+
+def total_SNR_from_dict(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telescopes=4):
+    snr_arr = grab_SNR_per_kernel(dict,D,t,eta,zod_fac)
+    return total_SNR(snr_arr)
 
 """
 Rough cost of the telescope array from Stahl 2020
