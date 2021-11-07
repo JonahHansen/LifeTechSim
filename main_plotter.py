@@ -14,6 +14,8 @@ t = 3600
 SNR_threshold = 7
 n_universes = 10
 
+eta = 0.05*0.7
+
 prefix = "data/avatar_run"
 
 arch = [1,3,4,7,8,9,10]
@@ -22,7 +24,7 @@ arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.6
 
 #pokemon_colours("charmander")
 
-def bar_plots(wave,eta):
+def bar_plots(wave):
 
     n_tot_ls = []
     n_hab_ls = []
@@ -134,14 +136,15 @@ def sorted_indices(arr):
     a.reverse()
     return np.array(a)-1
 
-def char_plots(wave,eta,n_planets):
+def char_plots(wave,n_planets):
 
     n_tot_ls = []
 
     bracewell_results = load_results(prefix,1,2,wave)
     bracewell_results.sort(key=lambda item: item.get("planet_name"))
 
-    bracewell_results = [d for d in bracewell_results if d["habitable"] == "True"]
+    #bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True") & (d["planet_radius"] < 1.9)]
+    bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True")]
 
     bracewell_SNR_arr = []
     baseline_arr = []
