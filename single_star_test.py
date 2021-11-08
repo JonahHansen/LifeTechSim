@@ -17,7 +17,7 @@ if mode == 1:
     fov_scale_factor = 5
 elif mode == 2:
     sz = 800
-    fov_scale_factor = main_wave/spec.channel_centres[0] + 0.1
+    fov_scale_factor = main_wave/(spec.channel_centres[0]*1e6) + 0.1
 
 
 #Run planet retrieval (to convert from PPop file), or load pickled file?

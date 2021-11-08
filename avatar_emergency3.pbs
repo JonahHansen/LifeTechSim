@@ -1,0 +1,21 @@
+##### Select resources #####
+#PBS -N LIFETechSim3
+#PBS -l ncpus=28
+
+##### Queue #####
+#PBS -q smallmem
+
+##### Mail Options #####
+# Send an email at job start, end and if aborted
+#PBS -m abe
+
+##### Change to your working directory #####
+cd /avatar/jhansen/LifeTechSim
+
+##### Execute Program #####
+source ../pyenv/bin/activate
+python main_sim.py 7 2 18 avatar_run_7_2_18.json False
+python main_sim.py 8 2 10 avatar_run_8_2_10.json False
+python main_sim.py 8 2 15 avatar_run_8_2_15.json False
+python main_sim.py 8 2 18 avatar_run_8_2_18.json False
+python main_sim.py 9 2 10 avatar_run_9_2_10.json False

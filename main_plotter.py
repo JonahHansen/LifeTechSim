@@ -1,9 +1,9 @@
 import numpy as np
-from snr_calculator import total_SNR_from_dict,load_results
+from snr_calculator import total_SNR_from_dict,load_results,grab_SNR_per_kernel
 import matplotlib.pyplot as plt
 import json
 import operator
-from pokemon_matplotlib import pokemon_colours
+#from pokemon_matplotlib import pokemon_colours
 
 baseline_min = 10
 baseline_max = 600
@@ -209,3 +209,80 @@ def char_plots(wave,n_planets):
     plt.plot(np.array(range(n_planets))+1, bracewell_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
 
     plt.show()
+
+
+def bug_plot(ar,n,wave,n_planets):
+
+    n_tot_ls = []
+
+    bracewell_results = load_results(prefix,1,2,wave)
+    bracewell_results.sort(key=lambda item: item.get("planet_name"))
+
+    #bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True") & (d["planet_radius"] < 1.9)]
+    bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True")]
+
+    bracewell_SNR_arr = []
+    baseline_arr = []
+    for item in bracewell_results:
+        baseline_arr.append(item['baseline'])
+        bracewell_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,1,True,4))
+
+    bracewell_SNR_arr = np.array(bracewell_SNR_arr)
+
+    indices = sorted_indices(bracewell_SNR_arr)
+
+    n_indices = []
+    count = 0
+    i = 0
+    while count < n_planets:
+        if (baseline_arr[indices[i]] <= baseline_max) and (baseline_arr[indices[i]] >= baseline_min):
+            n_indices.append(indices[i])
+            count += 1
+        i += 1
+
+    output_snr_ratio = []
+
+    if ar == 4:
+        zod_fac = 0.5
+    else:
+        zod_fac = 1
+
+    results = load_results(prefix,ar,2,wave)
+    results.sort(key=lambda item: item.get("planet_name"))
+
+    results = [d for d in results if d["habitable"] == "True"]
+
+    ratio_SNR_arr = []
+
+    #plt.ioff()
+
+    for item,bracewell_SNR in zip(np.array(results)[n_indices],bracewell_SNR_arr[n_indices]):
+        snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
+
+        import pdb; pdb.set_trace()
+
+        linestyles = ["-","--"]
+
+        waves = np.linspace(3,18,10)
+        plt.figure(1)
+        for j in range(len(snr_1)):
+            plt.plot(waves,snr_1[j],c="b",ls=linestyles[j])
+
+        plt.figure(2)
+        snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n)
+        for j in range(len(snr_1)):
+            plt.plot(waves,snr_2[j],c="g",ls=linestyles[j])
+
+        plt.figure(3)
+        snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n,exozodfac=0)
+        for j in range(len(snr_1)):
+            plt.plot(waves,snr_3[j],c="r",ls=linestyles[j])
+
+        plt.figure(4)
+        snr_4 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n,stellarfac=0)
+        for j in range(len(snr_1)):
+            plt.plot(waves,snr_4[j],c="c",ls=linestyles[j])
+
+
+
+        plt.show()

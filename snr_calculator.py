@@ -36,7 +36,7 @@ Inputs:
 Outputs:
     List of SNRs for each kernel and wavelength
 """
-def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telescopes=4):
+def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telescopes=4,exozodfac=1,stellarfac=1):
 
     if const_total_area:
         D *= np.sqrt(4/num_telescopes)
@@ -45,8 +45,8 @@ def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telesc
 
     signal = np.array(dict["signal"])*A*t*eta
     shot = np.array(dict["shot"])*A*t*eta
-    leakage = np.array(dict["leakage"])*A*t*eta
-    exozodiacal = np.array(dict["exozodiacal"])*A*t*eta
+    leakage = np.array(dict["leakage"])*A*t*eta*stellarfac
+    exozodiacal = np.array(dict["exozodiacal"])*A*t*eta*exozodfac
     zodiacal = np.array(dict["zodiacal"])*t*eta*zod_fac
 
     return SNR(signal, shot, leakage, zodiacal, exozodiacal)
@@ -212,7 +212,7 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
 
 
 def get_data_one_planet(planet_index,mode,wave_index):
-    prefix = "out_data/avatar_test"
+    prefix = "data/avatar_run"
     mode_names = ["Search","Characterisation"]
     arch = [1,3,4,7,8,9,10]
     wavelengths = [10,15,18]

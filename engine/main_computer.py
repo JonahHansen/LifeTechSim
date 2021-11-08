@@ -42,6 +42,8 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
         outputs = nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz #number of mas per pixel
 
+
+        import pdb; pdb.set_trace()
         #exozodiacal flux (phot/s/m^2) per kernel
         exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)
 
@@ -89,6 +91,8 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             #Get response maps
             outputs = nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz #number of mas per pixel
+
+            import pdb; pdb.set_trace()
 
             #exozodiacal flux (phot/s/m^2) per telescope
             exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)

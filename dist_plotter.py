@@ -12,7 +12,7 @@ baseline_max = 600
 
 D = 2
 t = 3600
-eta = 0.2
+eta = 0.05
 
 SNR_threshold = 7
 

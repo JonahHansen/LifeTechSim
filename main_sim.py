@@ -119,7 +119,7 @@ if mode == 1: #search
 elif mode == 2: #characterisation
     sz = 600
     mode_verbose = "Characterisation"
-    fov_scale_factor = base_wave/spec.channel_centres[0] + 0.1
+    fov_scale_factor = base_wave/(spec.channel_centres[0]*1e6) + 0.1
 else:
     raise Exception("Mode not recognised")
 
