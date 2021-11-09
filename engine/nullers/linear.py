@@ -1,7 +1,4 @@
-import sys
-sys.path.append("../..")
 import numpy as np
-from opticstools import knull
 
 """
 Calculates the positions of four telescopes in a rectangular formation.

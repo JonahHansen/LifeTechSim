@@ -1,7 +1,4 @@
-import sys
-sys.path.append("../..")
 import numpy as np
-from opticstools import knull
 
 """
 Calculates the positions of five telescopes in an equilateral triangle formation.
@@ -17,6 +14,15 @@ def triangle(baseline):
     xs = R*np.cos(angles)
     ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
+
+def make_nuller_mat3_JH():
+    """Create a 3x3 Nuller matrix"""
+    initial_mat = np.zeros( (3,3) )
+    for i in range(3):
+        initial_mat[i] = np.arange(3) * i
+    initial_mat = np.exp(2j*np.pi/3*initial_mat)
+    return initial_mat
+
 
 """
 Function to calculate the response map of a three telescope kernel nuller interferometer.
@@ -34,7 +40,7 @@ Outputs:
 """
 def get_nuller_response(baseline,fov,sz,base_wavelength):
 
-    N = knull.make_nuller_mat3_JH()
+    N = make_nuller_mat3_JH()
 
     telescope_array = triangle(baseline)
 

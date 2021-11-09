@@ -1,8 +1,4 @@
-import sys
-sys.path.append("../..")
 import numpy as np
-from opticstools import knull
-
 
 """
 Calculates the positions of five telescopes in a regular pentagonal formation.
@@ -20,6 +16,14 @@ def pentagon(baseline):
     ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
 
+def make_nuller_mat5():
+    """Create a 5x5 Nuller matrix"""
+    initial_mat = np.zeros( (5,5) )
+    for i in range(5):
+        initial_mat[i] = np.arange(5) * i
+    initial_mat = np.exp(2j*np.pi/5*initial_mat)
+    return initial_mat
+
 """
 Function to calculate the response map of a five telescope kernel nuller interferometer.
 
@@ -36,7 +40,7 @@ Outputs:
 """
 def get_nuller_response(baseline,fov,sz,base_wavelength):
 
-    N = knull.make_nuller_mat5()
+    N = make_nuller_mat5()
 
     telescope_array = pentagon(baseline)
 

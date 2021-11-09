@@ -1,7 +1,4 @@
-import sys
-sys.path.append("../..")
 import numpy as np
-from opticstools import knull
 
 """
 Calculates the positions of four telescopes in a rectangular formation.
@@ -16,6 +13,87 @@ def rectangle(baseline,ratio):
     xs = [baseline/2,-baseline/2,-baseline/2,baseline/2]
     ys = [baseline*ratio/2,baseline*ratio/2,-baseline*ratio/2,-baseline*ratio/2]
     return np.array([xs,ys]).T
+
+def make_nuller_mat4(bracewell_design=True, ker_only=False,
+    phase_shifters=np.array([1,1,1], dtype=complex), ker_coupler_angle=np.pi/2):
+    """Make a nuller electric field matrix for a 3 telescope combiner
+
+    Parameters
+    ----------
+    bracewell_design: bool
+        Do we use a Bracewell-like design? If not, then we use an
+        obvious symmetrical matrix. Harry can build a bracewell-like
+        design already.
+
+    ker_only: bool
+        Do we use kernel outputs only or all 9?
+
+    phase_shifters: array-like
+        Three phasors to represent the on-chip phase modulation. For no
+        phase shift, these should be 1, and for 180 degrees they should
+        be -1 (i.e. interferometric chopping)
+
+    ker_coupler_angle: float
+        In the case of kernel outputs only, the final 50/50 couplers are defined by the
+        one phase. See e.g. https://en.wikipedia.org/wiki/Unitary_matrix, setting theta
+        to pi/2 (50/50), and phase angle varphi_1 to 0.
+    """
+    #4x4 is nice and symmetric because you can get flux and visibilities
+    #from 3 tri-couplers in the nulled channels.
+    if bracewell_design:
+        sq2 = np.sqrt(2)
+        #For a "Bracewell" design, each element has a
+        #matrix 1/sq2 * np.array([[1,1],[1,-1]])
+        MM0 = 0.5 * np.array([[1,      1,   1,    1],
+                              [1,      1,  -1,   -1],
+                              [sq2, -sq2,   0,    0],
+                              [0,      0, sq2, -sq2]], dtype=complex)
+    else:
+        MM0 = 0.5 * np.array([[1, 1, 1, 1],
+                              [1, 1,-1,-1],
+                              [1,-1, 1,-1],
+                              [1,-1,-1, 1]], dtype=complex)
+
+    #Add in the phase shifters
+    for ix,phasor in enumerate(phase_shifters):
+        MM0[ix+1] *= phasor
+
+    if ker_only:
+        MM1 = np.zeros( (7,4), dtype=complex)
+        #Start with the bright output.
+        MM1[0] = MM0[0]
+
+        #Now lets take the three nulled outputs, and put each of these into a 2x2-coupler.
+        PHI0 = np.exp(1j*ker_coupler_angle)
+        PHI1 = np.conj(PHI0)
+
+        MM1[1] = (MM0[1] + PHI0*MM0[2]) / 2
+        MM1[2] = (-PHI1*MM0[1] + MM0[2]) / 2
+
+        MM1[3] = (MM0[1] + PHI0*MM0[3]) / 2
+        MM1[4] = (-PHI1*MM0[1] + MM0[3]) / 2
+
+        MM1[5] = (MM0[2] + PHI0*MM0[3]) / 2
+        MM1[6] = (-PHI1*MM0[2] + MM0[3]) / 2
+    else:
+        #Now lets take the three nulled outputs, and put each of these into a tri-coupler.
+        PHI0 = np.exp(2j*np.pi/3)
+        MM1 = np.zeros( (10,4), dtype=complex)
+        MM1[0] = MM0[0]
+
+        MM1[1] = (MM0[1] + MM0[2] * PHI0**0) / np.sqrt(6)
+        MM1[2] = (MM0[1] + MM0[2] * PHI0**1) / np.sqrt(6)
+        MM1[3] = (MM0[1] + MM0[2] * PHI0**2) / np.sqrt(6)
+
+        MM1[4] = (MM0[1] + MM0[3] * PHI0**0) / np.sqrt(6)
+        MM1[5] = (MM0[1] + MM0[3] * PHI0**1) / np.sqrt(6)
+        MM1[6] = (MM0[1] + MM0[3] * PHI0**2) / np.sqrt(6)
+
+        MM1[7] = (MM0[2] + MM0[3] * PHI0**0) / np.sqrt(6)
+        MM1[8] = (MM0[2] + MM0[3] * PHI0**1) / np.sqrt(6)
+        MM1[9] = (MM0[2] + MM0[3] * PHI0**2) / np.sqrt(6)
+    return MM1
+
 
 """
 Calculates the positions of four telescopes in a right kite formation.
@@ -53,7 +131,7 @@ Outputs:
 def get_nuller_response(baseline,fov,sz,base_wavelength,ratio=1.69):
 
     #Nulling matrix from Martinache and Ireland (2008) paper
-    M = knull.make_nuller_mat4(bracewell_design=False, ker_only=True)
+    M = make_nuller_mat4(bracewell_design=False, ker_only=True)
 
     telescope_array = right_kite(baseline,ratio)
 
