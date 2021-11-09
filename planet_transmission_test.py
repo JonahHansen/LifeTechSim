@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy import constants as const
-from opticstools import knull
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
@@ -33,39 +31,6 @@ def azimuthal_rms(image,r):
     return np.sqrt(sum/n_angles)
 
 
-"""
-Calculate the maximum over azimuthal angles for a given response map and
-radial position
-
-Inputs:
-    image = response map
-    r = radial position to find the maximum over angles
-
-Outputs:
-    maximum over azimuthal angles
-"""
-def azimuthal_max(image,r):
-
-    n_angles = 10000
-    angles = np.linspace(0,2*np.pi,n_angles)
-
-    centre = (int(image.shape[0]/2),int(image.shape[1]/2))
-
-    #Planet out of field of view!
-    if r > image.shape[0]/2:
-        return 0
-
-    max = 0
-    for theta in angles:
-        x = centre[0] + r*np.cos(theta)
-        y = centre[1] + r*np.sin(theta)
-
-        a = image[int(x),int(y)]
-
-        if a > max:
-            max = a
-
-    return max
 ######################
 architecture = 5
 
@@ -147,7 +112,7 @@ i = 1
 for (res,k) in outputs: #For each kernel output
     k_ave = []
     for r in rs:
-        k_ave.append(azimuthal_max(k,r)) #RMS azimuthal average for different radial positions
+        k_ave.append(azimuthal_rms(k,r)) #RMS azimuthal average for different radial positions
     ks.append(k_ave)
     plt.figure(i)
     plt.imshow(k) #Plot the kernel map

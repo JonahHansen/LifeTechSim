@@ -150,7 +150,7 @@ Output:
     Dataframe of SNR as a function of architecture
 """
 def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_data):
-    prefix = "out_data/avatar_test"
+    prefix = "../out_data/avatar_test"
     mode_names = ["Search","Characterisation"]
     arch = [1,3,4,7,8,9,10]
     wavelengths = [10,15,18]
@@ -212,7 +212,7 @@ def create_dataframe(mode,wave_index,D,t,eta,baseline_lim,per_telescope,extra_da
 
 
 def get_data_one_planet(planet_index,mode,wave_index):
-    prefix = "data/avatar_run"
+    prefix = "../data/avatar_run"
     mode_names = ["Search","Characterisation"]
     arch = [1,3,4,7,8,9,10]
     wavelengths = [10,15,18]
@@ -271,6 +271,6 @@ def make_SNR_pie_chart(mode,wave_index,baseline_lim,per_telescope):
 
 
 def main(arch,mode,wave,D,t,eta):
-    prefix = "out_data/avatar_test"
+    prefix = "../out_data/avatar_test"
     results = load_results(prefix,arch,mode,wave)
     calc_SNR_hist(results,D,t,eta)

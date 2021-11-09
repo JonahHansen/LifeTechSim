@@ -31,7 +31,7 @@ Output:
     list of dictionaries
 """
 def load_results(arch,wave,star_index,planet_index):
-    prefix = "data/avatar_dist_run"
+    prefix = "../data/avatar_dist_run"
     filename = prefix+"_"+str(arch)+"_"+str(wave)+".json"
     fin = open(filename,"r")
     data = json.load(fin)

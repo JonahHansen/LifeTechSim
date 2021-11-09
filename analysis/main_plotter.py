@@ -1,11 +1,13 @@
 import numpy as np
-from snr_calculator import total_SNR_from_dict,load_results,grab_SNR_per_kernel
+from snr_calculator import total_SNR_from_dict,load_results,grab_SNR_per_kernel,get_data_one_planet
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import json
 import operator
+import cycler
 #from pokemon_matplotlib import pokemon_colours
 
-baseline_min = 10
+baseline_min = 5
 baseline_max = 600
 
 D = 2
@@ -14,13 +16,15 @@ t = 3600
 SNR_threshold = 7
 n_universes = 10
 
-eta = 0.05*0.7
+eta = 0.05
 
-prefix = "data/avatar_run"
+prefix = "../data/avatar_run"
 
-arch = [1,3,4,7,8,9,10]
+mode_names = ["Search", "Characterisation"]
+arch_ls = [1,3,4,7,8,9,10]
 n_scopes = [4,3,4,5,5,5,5]
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
+
 
 #pokemon_colours("charmander")
 
@@ -38,7 +42,7 @@ def bar_plots(wave):
     n_cold_ls = []
     n_temp_ls = []
     n_hot_ls = []
-    for a,n in zip(arch,n_scopes):
+    for a,n in zip(arch_ls,n_scopes):
 
         if a == 4:
             zod_fac = 0.5
@@ -127,10 +131,6 @@ def bar_plots(wave):
 
     return
 
-def n_max_arg(arr,n):
-    ind = np.argpartition(arr,-n)[-n:]
-    return ind[np.argsort(arr[ind])][::-1]
-
 def sorted_indices(arr):
     a = [operator.itemgetter(0)(t) for t in sorted(enumerate(arr,1), key=operator.itemgetter(1))]
     a.reverse()
@@ -167,7 +167,7 @@ def char_plots(wave,n_planets):
 
     output_snr_ratio = []
 
-    for a,n in zip(arch,n_scopes):
+    for a,n in zip(arch_ls,n_scopes):
 
         if a == 4:
             zod_fac = 0.5
@@ -195,7 +195,7 @@ def char_plots(wave,n_planets):
     #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
     plt.xlabel('Planet no.')
     plt.ylabel('Relative SNR to Bracewell/Emma X-array')
-    plt.title('Architecture relative SNR for characterisation of\n 30 highest SNR planets in Emma X-array configuration')
+    plt.title('Architecture relative SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
     for i,arch_ratio in enumerate(output_snr_ratio):
         plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=5,ms=20,label=arch_names[i])
     plt.legend()
@@ -205,40 +205,14 @@ def char_plots(wave,n_planets):
     #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
     plt.xlabel('Planet no.')
     plt.ylabel('Bracewell/Emma X-array SNR')
-    plt.title('SNR for characterisation of\n 30 highest SNR planets in Emma X-array configuration')
+    plt.title('SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
     plt.plot(np.array(range(n_planets))+1, bracewell_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
 
     plt.show()
+    return
 
 
-def bug_plot(ar,n,wave,n_planets):
-
-    n_tot_ls = []
-
-    bracewell_results = load_results(prefix,1,2,wave)
-    bracewell_results.sort(key=lambda item: item.get("planet_name"))
-
-    #bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True") & (d["planet_radius"] < 1.9)]
-    bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True")]
-
-    bracewell_SNR_arr = []
-    baseline_arr = []
-    for item in bracewell_results:
-        baseline_arr.append(item['baseline'])
-        bracewell_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,1,True,4))
-
-    bracewell_SNR_arr = np.array(bracewell_SNR_arr)
-
-    indices = sorted_indices(bracewell_SNR_arr)
-
-    n_indices = []
-    count = 0
-    i = 0
-    while count < n_planets:
-        if (baseline_arr[indices[i]] <= baseline_max) and (baseline_arr[indices[i]] >= baseline_min):
-            n_indices.append(indices[i])
-            count += 1
-        i += 1
+def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
     output_snr_ratio = []
 
@@ -247,42 +221,114 @@ def bug_plot(ar,n,wave,n_planets):
     else:
         zod_fac = 1
 
-    results = load_results(prefix,ar,2,wave)
+    results = load_results(prefix,arch,2,wave)
     results.sort(key=lambda item: item.get("planet_name"))
 
     results = [d for d in results if d["habitable"] == "True"]
 
-    ratio_SNR_arr = []
-
     #plt.ioff()
 
-    for item,bracewell_SNR in zip(np.array(results)[n_indices],bracewell_SNR_arr[n_indices]):
-        snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
+    item = np.array(results)[planet_index]
+    snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes)
+    snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n_telescopes)
+    snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,exozodfac=0)
+    snr_4 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,stellarfac=0)
 
-        import pdb; pdb.set_trace()
+    linestyles = ["-","--"]
 
-        linestyles = ["-","--"]
+    waves = np.linspace(3,18,10)
+    plt.figure(1)
+    plt.clf()
+    for j in range(len(snr_1)):
+        plt.plot(waves,snr_2[j],c="g",ls=linestyles[j],label="K%s, No zodi noise"%(j+1))
+        plt.plot(waves,snr_3[j],c="r",ls=linestyles[j],label="K%s, No exozodi noise"%(j+1))
+        plt.plot(waves,snr_4[j],c="c",ls=linestyles[j],label="K%s, No leakage noise"%(j+1))
+        plt.plot(waves,snr_1[j],c="b",ls=linestyles[j],label="K%s, All noise"%(j+1))
+
+    plt.legend()
+    plt.show()
+    return
+
+def snr_wave_plot(mode,wave,planet_index):
+
+    color = plt.cm.tab10(np.linspace(0, 1,10))
+    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+
+    plt.figure(1)
+    plt.clf()
+    for a,n,name in zip(arch_ls,n_scopes,arch_names):
+
+        if a == 4:
+            zod_fac = 0.5
+        else:
+            zod_fac = 1
+
+        results = load_results(prefix,a,mode,wave)
+        results.sort(key=lambda item: item.get("planet_name"))
+
+        results = [d for d in results if d["habitable"] == "True"]
+
+        #plt.ioff()
+
+        item = np.array(results)[planet_index]
+        snr = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
+
+        combined_snr = np.sqrt(np.sum(snr**2,axis=0))
 
         waves = np.linspace(3,18,10)
-        plt.figure(1)
-        for j in range(len(snr_1)):
-            plt.plot(waves,snr_1[j],c="b",ls=linestyles[j])
 
-        plt.figure(2)
-        snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n)
-        for j in range(len(snr_1)):
-            plt.plot(waves,snr_2[j],c="g",ls=linestyles[j])
+        plt.plot(waves,combined_snr,label=name)
 
-        plt.figure(3)
-        snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n,exozodfac=0)
-        for j in range(len(snr_1)):
-            plt.plot(waves,snr_3[j],c="r",ls=linestyles[j])
-
-        plt.figure(4)
-        snr_4 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n,stellarfac=0)
-        for j in range(len(snr_1)):
-            plt.plot(waves,snr_4[j],c="c",ls=linestyles[j])
+    plt.xlabel("Wavelength (um)")
+    plt.ylabel("SNR")
+    plt.title("SNR against wavelength for %s\n with a reference wavelength of %s um"%(mode_names[mode-1],wave))
+    plt.legend()
+    plt.show()
+    return
 
 
+def round_sig_figs(x, p):
+    x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
+    mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
+    return np.round(x * mags) / mags
 
-        plt.show()
+def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
+    results = load_results(prefix,arch,mode,wave)
+    dict = results[planet_index]
+
+    D *= np.sqrt(4/num_telescopes)
+
+    A = np.pi*D**2/4
+
+    if arch == 4:
+        zod_fac = 0.5
+    else:
+        zod_fac = 1
+
+    linestyles = ["-","--",".."]
+
+    signal = 2*np.array(dict["signal"])*A
+    shot = 2*np.array(dict["shot"])*A
+    leakage = 2*np.array(dict["leakage"])*A
+    exozodiacal = 2*np.array(dict["exozodiacal"])*A
+    zodiacal = 2*np.array(dict["zodiacal"])*zod_fac
+
+    waves = np.linspace(3,18,10)
+
+    plt.figure(1)
+    plt.clf()
+
+    for j in range(len(signal)):
+        plt.plot(waves,np.log10(signal[j]),c="k",ls=linestyles[j],label="K%s, Signal"%(j+1))
+        plt.plot(waves,np.log10(shot[j]),c="r",ls=linestyles[j],label="K%s, Shot noise"%(j+1))
+        plt.plot(waves,np.log10(leakage[j]),c="c",ls=linestyles[j],label="K%s, Stellar leakage noise"%(j+1))
+        plt.plot(waves,np.log10(exozodiacal[j]),c="b",ls=linestyles[j],label="K%s, Exozodiacal noise"%(j+1))
+        if j ==0:
+            plt.plot(waves,np.log10(zodiacal),c="g",ls=linestyles[j],label="K%s, Zodiacal noise"%(j+1))
+
+    plt.xlabel("Wavelength (um)")
+    plt.ylabel("Photon rate (ph/s)")
+    plt.title("Photon rates for the various signal and noise components\n for the %s architecture, %s mode\n reference wavelength of %s and D=%s"%(arch,mode,wave,round_sig_figs(D,3)))
+    plt.legend()
+    plt.show()
+    return
