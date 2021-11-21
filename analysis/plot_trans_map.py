@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -5,7 +7,7 @@ import cycler
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
-architecture = 10
+architecture = 7
 base_wave = 15
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -157,7 +159,21 @@ pos2 = pos[:,:,arg]
 
 color = plt.cm.winter(np.linspace(0, 1,num_channels))
 mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-
+"""import pokepalette
+import vapeplot
+pokecmap = pokepalette.get_colormap('pikachu')
+pokecmap = vapeplot.cmap('vaporwave')
+i=0
+for (res,k) in outputs:
+    plt.figure(i)
+    plt.clf()
+    plt.imshow(k,cmap=pokecmap,extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
+    plt.colorbar(label="Transmission per telescope flux")
+    i+=1
+    plt.legend()
+    plt.xlabel("Angular position")
+    plt.ylabel("Angular position")
+"""
 i=0
 for (res,k) in outputs:
     plt.figure(i)

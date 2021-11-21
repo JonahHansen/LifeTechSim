@@ -7,8 +7,8 @@ import operator
 import cycler
 #from pokemon_matplotlib import pokemon_colours
 
-baseline_min = 5
-baseline_max = 600
+baseline_min = 5 #FINE FOR ALL (As baseline refers to smallest baseline)
+baseline_max = 600 #Possibly problematic... especially for bracewell which has 6x smaller limit
 
 D = 2
 t = 3600
@@ -24,6 +24,7 @@ mode_names = ["Search", "Characterisation"]
 arch_ls = [1,3,4,7,8,9,10]
 n_scopes = [4,3,4,5,5,5,5]
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
+
 
 
 #pokemon_colours("charmander")
@@ -229,6 +230,17 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
     #plt.ioff()
 
     item = np.array(results)[planet_index]
+
+    print("###################\nPlanet data\n####################")
+    print("Star distance = %s"%item["star_distance"])
+    print("Star type = %s"%item["star_type"])
+    print("Planet angle = %s"%item["planet_angle"])
+    print("Array angle = %s"%item["array_angle"])
+    print("Array baseline = %s"%item["baseline"])
+    print("Planet temp = %s"%item["planet_temp"])
+    print("Planet radius = %s"%item["planet_radius"])
+    print("Habitable? = %s"%item["habitable"])
+
     snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes)
     snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n_telescopes)
     snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,exozodfac=0)
@@ -271,6 +283,18 @@ def snr_wave_plot(mode,wave,planet_index):
         #plt.ioff()
 
         item = np.array(results)[planet_index]
+
+        print("###################\nPlanet data\n####################")
+        print("Star distance = %s"%item["star_distance"])
+        print("Star type = %s"%item["star_type"])
+        print("Planet angle = %s"%item["planet_angle"])
+        print("Array angle = %s"%item["array_angle"])
+        print("Array baseline = %s"%item["baseline"])
+        print("Planet temp = %s"%item["planet_temp"])
+        print("Planet radius = %s"%item["planet_radius"])
+        print("Habitable? = %s"%item["habitable"])
+
+
         snr = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
 
         combined_snr = np.sqrt(np.sum(snr**2,axis=0))
@@ -294,7 +318,17 @@ def round_sig_figs(x, p):
 
 def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     results = load_results(prefix,arch,mode,wave)
-    dict = results[planet_index]
+    item = results[planet_index]
+
+    print("###################\nPlanet data %s\n####################"%arch)
+    print("Star distance = %s"%item["star_distance"])
+    print("Star type = %s"%item["star_type"])
+    print("Planet angle = %s"%item["planet_angle"])
+    print("Array angle = %s"%item["array_angle"])
+    print("Array baseline = %s"%item["baseline"])
+    print("Planet temp = %s"%item["planet_temp"])
+    print("Planet radius = %s"%item["planet_radius"])
+    print("Habitable? = %s"%item["habitable"])
 
     D *= np.sqrt(4/num_telescopes)
 
@@ -307,11 +341,11 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
 
     linestyles = ["-","--",".."]
 
-    signal = 2*np.array(dict["signal"])*A
-    shot = 2*np.array(dict["shot"])*A
-    leakage = 2*np.array(dict["leakage"])*A
-    exozodiacal = 2*np.array(dict["exozodiacal"])*A
-    zodiacal = 2*np.array(dict["zodiacal"])*zod_fac
+    signal = 2*np.array(item["signal"])*A
+    shot = 2*np.array(item["shot"])*A
+    leakage = 2*np.array(item["leakage"])*A
+    exozodiacal = 2*np.array(item["exozodiacal"])*A
+    zodiacal = 2*np.array(item["zodiacal"])*zod_fac
 
     waves = np.linspace(3,18,10)
 

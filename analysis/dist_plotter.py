@@ -7,7 +7,7 @@ from bisect import bisect_left, bisect_right
 star_types = ["A6V","F7V","G2V","K2V","M5V"]
 planets = ["Inner HZ", "Mid HZ", "Outer HZ"]
 
-baseline_min = 10
+baseline_min = 5
 baseline_max = 600
 
 D = 2
@@ -15,6 +15,7 @@ t = 3600
 eta = 0.05
 
 SNR_threshold = 7
+
 
 """
 Load list of dictionaries from a JSON file.
@@ -87,10 +88,12 @@ def make_plot(wave,star_index,planet_index):
         plt.plot(dist[:bad_index_min],np.log10(snr[:bad_index_min]),label=name,linestyle="--",color=c)
         plt.plot(dist[bad_index_max:],np.log10(snr[bad_index_max:]),label="",linestyle="--",color=c)
         plt.plot(dist[bad_index_min:bad_index_max],np.log10(snr[bad_index_min:bad_index_max]),label="",linestyle="-",color=c)
+
         plt.figure(2)
         plt.plot(dist[:bad_index_min],snr[:bad_index_min]/snr_b[:bad_index_min],label=name,linestyle="--",color=c)
         plt.plot(dist[bad_index_max:],snr[bad_index_max:]/snr_b[bad_index_max:],label="",linestyle="--",color=c)
         plt.plot(dist[bad_index_min:bad_index_max],snr[bad_index_min:bad_index_max]/snr_b[bad_index_min:bad_index_max],label="",linestyle="-",color=c)
+
 
     plt.figure(1)
     plt.axhline(y = np.log10(SNR_threshold), color = 'k', linestyle = '--')
@@ -98,7 +101,6 @@ def make_plot(wave,star_index,planet_index):
     plt.ylabel("[SNR]")
     plt.title("SNR against distance for planets in the %s\n for a %s type star at %s microns" %(planets[planet_index],star_types[star_index],wave))
     plt.legend()
-
 
     plt.figure(2)
     plt.xlabel("Distance (pc)")
