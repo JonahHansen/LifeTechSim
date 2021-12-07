@@ -328,34 +328,42 @@ Inputs:
 Output:
     list of stellar leakage fluxes in phot/s/m^2 (for each kernel and wavelength)
 """
-def stellar_leakage(star,response_func,baseline,base_wavelength):
+def stellar_leakage(star,response_func,baseline,spec):
 
-    sz = 400
+    #calculate transmission (field of view has a radius equal to 5x star's angular radius)
+    outputs = response_func(baseline,10*star.angRad/rad2mas,sz,spec.baseline_wave)
+
+    sz = 500
 
     #Create an array
     arr = np.arange(sz)-sz/2
     x,y = np.meshgrid(arr,arr)
-    r = np.sqrt(x**2 + y**2)
-    r *= 2/sz #convert into multiples of stellar radius
-
-    pixel_size = r[100,100] - r[100,99]
-
-    #Limb_darkening, normalised over the total area
-    I = limb_darkening(r)
-    I[np.isnan(I)] = 0
-    I/=np.sum(I) #normalise by total sum
-
-    #Turn into limb_darkened flux
-    fluxes = np.tile(star.flux,(sz,sz,1)).T
-    I = I*fluxes
-
-    #calculate transmission (field of view has a radius equal to star's angular radius)
-    outputs = response_func(baseline,2*star.angRad/rad2mas,sz,base_wavelength)
 
     #Calculate leakage for each output
     leakage = []
     for (res,ker) in outputs:
-        leakage.append(np.sum(res*I,axis=(1,2)))
+
+        temp_leakage = []
+        for i, wave in spec.channel_centres:
+
+            r = np.sqrt(x**2 + y**2)
+            r *= 10/sz #Full grid is 5x the radius
+
+            #Scale according to wavelength
+            r *= wave/spec.baseline_wave
+
+            #Limb_darkening, normalised over the total area
+            I = limb_darkening(r)
+            I[np.isnan(I)] = 0
+            I/=np.sum(I) #normalise by total sum
+
+            #Turn into limb_darkened flux
+
+            I = I*star.flux[i]
+
+            temp_leakage.append(np.sum(res*I))
+
+        leakage.append(temp_leakage)
 
     return leakage
 
@@ -475,35 +483,11 @@ Output:
 """
 #Calc the exozodiacal flux (photons/s/m^2)
 #Essentially sums over solid angle.
-def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
+def calc_exozodiacal(star,outputs,local_zodi,wave_pix2mas,sz,spec):
 
     #Create array
     arr = np.arange(sz)-sz/2
     x,y = np.meshgrid(arr,arr)
-    r = np.sqrt(x**2 + y**2)
-
-    r = r*pix2mas/rad2mas*star.Dist*pc/au #convert into au scale
-
-    #Flux distribution from WISPR Observations (Stenborg 2020)
-    # au = solar_rad/215
-    r_in = 3/215 #3 Solar radii
-    r_out = 19/215 #19 Solar radii
-    lambda_r = np.piecewise(r, [r < r_in, ((r >= r_in) & (r <= r_out)), r > r_out],
-                               [0, lambda x: (x-r_in)/(r_out-r_in), 1])
-
-    #Column density distribution of zodiacal dust (IS THIS SCALING TRUE...) YES SEE BELOW
-    #EXO-ZODI MODELLING FOR THE LARGE BINOCULAR TELESCOPE INTERFEROMETER - Kennedy 2015!
-    with np.errstate(divide='ignore', invalid='ignore'):
-        column_density = lambda_r*r**(-0.34)
-    column_density[int(sz/2),int(sz/2)] = 0
-
-    #Temperature distribution of zodiacal dust (IS THIS SCALING TRUE???)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        temp_dist = 300*r**(-0.5)
-    temp_dist[int(sz/2),int(sz/2)] = 1
-
-    #Solid angle of each pixel
-    solid_angle_pix = (pix2mas/rad2mas)**2
 
     #Calculate over all outputs
     exozodi = []
@@ -511,10 +495,36 @@ def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
 
         #Calculate exozodiacal flux for each wavelength channel
         temp_exozodi = []
-        for i in range(len(local_zodi)):
+        for i, wave in spec.channel_centres:
+
+            pix2mas = wave_pix2mas*wave
+
+            r = np.sqrt(x**2 + y**2)
+            r = r*pix2mas/rad2mas*star.Dist*pc/au #convert into au scale
+
+            #Flux distribution from WISPR Observations (Stenborg 2020)
+            # au = solar_rad/215
+            r_in = 3/215 #3 Solar radii
+            r_out = 19/215 #19 Solar radii
+            lambda_r = np.piecewise(r, [r < r_in, ((r >= r_in) & (r <= r_out)), r > r_out],
+                                       [0, lambda x: (x-r_in)/(r_out-r_in), 1])
+
+            #Column density distribution of zodiacal dust (IS THIS SCALING TRUE...) YES SEE BELOW
+            #EXO-ZODI MODELLING FOR THE LARGE BINOCULAR TELESCOPE INTERFEROMETER - Kennedy 2015!
+            with np.errstate(divide='ignore', invalid='ignore'):
+                column_density = lambda_r*r**(-0.34)
+            column_density[int(sz/2),int(sz/2)] = 0
+
+            #Temperature distribution of zodiacal dust (IS THIS SCALING TRUE???)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                temp_dist = 300*r**(-0.5)
+            temp_dist[int(sz/2),int(sz/2)] = 1
+
+            #Solid angle of each pixel
+            solid_angle_pix = (pix2mas/rad2mas)**2
+
             #Zodi flux at 1au is 2*local amount*exozodis
             local_scale_factor = 2*local_zodi[i]*star.Exzod
-
 
             #Sample each wavelength channeel
             wavelength_sample = np.linspace(spec.channel_borders[i],spec.channel_borders[i]+spec.dlambda,5)

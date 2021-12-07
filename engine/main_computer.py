@@ -42,17 +42,17 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
         outputs = nuller_response(baseline,fov,sz,base_wavelength)
         pix2mas = fov*rad2mas/sz #number of mas per pixel
 
+        #pix2mas conversion, removing wavelength dependence
+        #multiply by wavelength to get conversion factor for that wavelength
+        wave_pix2mas = pix2mas/base_wavelength
+
         #exozodiacal flux (phot/s/m^2) per kernel
-        exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)
+        exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,wave_pix2mas,sz,spec)
 
         #Calc stellar leakage flux (phot/s/m^2) per kernel
-        leakage = sf.stellar_leakage(star,nuller_response,baseline,base_wavelength)
+        leakage = sf.stellar_leakage(star,nuller_response,baseline,spec)
 
         for planet in star.Planets:
-
-            #pix2mas conversion, removing wavelength dependence
-            #multiply by wavelength to get conversion factor for that wavelength
-            wave_pix2mas = pix2mas/base_wavelength
 
             print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per kernel
@@ -90,15 +90,15 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             outputs = nuller_response(baseline,fov,sz,base_wavelength)
             pix2mas = fov*rad2mas/sz #number of mas per pixel
 
-            #exozodiacal flux (phot/s/m^2) per telescope
-            exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,pix2mas,sz,spec)
-
-            #Calc stellar leakage flux (phot/s/m^2) per telescope
-            leakage = sf.stellar_leakage(star,nuller_response,baseline,base_wavelength)
-
             #pix2mas conversion, removing wavelength dependence
             #multiply by wavelength to get conversion factor for that wavelength
             wave_pix2mas = pix2mas/base_wavelength
+
+            #exozodiacal flux (phot/s/m^2) per telescope
+            exozodiacal = sf.calc_exozodiacal(star,outputs,local_exozodi,wave_pix2mas,sz,spec)
+
+            #Calc stellar leakage flux (phot/s/m^2) per telescope
+            leakage = sf.stellar_leakage(star,nuller_response,baseline,spec)
 
             #signal flux (phot/s/m^2) per telescope
             signal = sf.calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode)
