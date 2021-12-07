@@ -63,7 +63,8 @@ if architecture == 1:
 
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
-    architecture_verbose = "Linear four telescope nuller"
+    architecture_verbose = "Four telescope linear nuller"
+    base_scale_factor = 0.6
 
 elif architecture == 3:
     from engine.nullers.three_telescopes import get_nuller_response
@@ -76,8 +77,8 @@ elif architecture == 4:
     base_scale_factor = 0.4
 
 elif architecture == 5:
-    from engine.nullers.four_telescopes import get_nuller_response
-    architecture_verbose = "Four telescope kernel nuller, optimised for K2"
+    from engine.nullers.linear_assymmetric import get_nuller_response
+    architecture_verbose = "Four telescope assymetric linear nuller"
     base_scale_factor = 0.4
 
 elif architecture == 6:
