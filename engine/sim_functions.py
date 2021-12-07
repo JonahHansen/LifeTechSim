@@ -80,7 +80,7 @@ def Planck_wrapper(T):
 def limb_darkening(r):
     with np.errstate(divide='ignore', invalid='ignore'):
         mu = np.sqrt(1-r**2)
-    return 1-0.47*(1-mu)-0.23*(1-mu)**2
+    return 1-0.05*(1-mu)-0.10*(1-mu)**2
 
 
 ##################### Azimuthal functions ###################################
