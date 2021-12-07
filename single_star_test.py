@@ -3,13 +3,13 @@ import pickle
 from engine.main_computer import compute
 from engine.sim_functions import calc_local_zodiacal_minimum,Spectrograph
 from engine.planet_retrieval import RetrievePlanetData as RPD
-from snr_calculator import total_SNR, grab_SNR_per_kernel
+from analysis.snr_calculator import total_SNR, grab_SNR_per_kernel
 
 #Main parameters
-mode = 2 #1 is search mode, 2 is characterisation mode
-architecture = 2
+mode = 1#1 is search mode, 2 is characterisation mode
+architecture =2
 main_wave = 15
-spec = Spectrograph(3,18,main_wave,10) #min,max,baseline_wavelength,num_channels
+spec = Spectrograph(4,18.5,main_wave,50) #min,max,baseline_wavelength,num_channels
 planet_path = "PPop/TestPlanetPopulation2.txt" #Input planet data
 
 if mode == 1:
@@ -81,7 +81,7 @@ elif architecture == 8:
 
 
 #Which star?
-star_index = 2
+star_index = 24
 
 #run
 star_data = compute(star_list[star_index],mode,get_nuller_response,spec,sz,base_scale_factor,fov_scale_factor,local_exozodi)

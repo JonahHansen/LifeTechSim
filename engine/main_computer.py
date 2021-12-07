@@ -54,7 +54,6 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
 
         for planet in star.Planets:
 
-            print("\nCalculating Signal")
             #signal flux (phot/s/m^2) per kernel
             signal = sf.calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode)
 
@@ -64,6 +63,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
                         "star_type":star.Stype,"star_distance":star.Dist,"baseline":baseline,
+                        "zodis":star.Exzod,
                         "array_angle":star.HZAngle, "planet_angle":planet.PAngSep,
                         "star_flux":star.flux,"planet_flux":planet.flux,
                         "planet_temp":planet.PTemp,"planet_radius":planet.PRad,
@@ -109,6 +109,7 @@ def compute(star,mode,nuller_response,spec,sz,base_scale_factor,fov_scale_factor
             row_data = {"star_name":star.Name, "planet_name":planet.Name,
                         "universe_no":planet.UNumber,"star_no":star.SNumber,"planet_no":planet.PNumber,
                         "star_type":star.Stype,"star_distance":star.Dist,"baseline":baseline,
+                        "zodis":star.Exzod,
                         "array_angle":planet.PAngSep, "planet_angle":planet.PAngSep,
                         "star_flux":star.flux,"planet_flux":planet.flux,
                         "planet_temp":planet.PTemp,"planet_radius":planet.PRad,

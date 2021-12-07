@@ -42,9 +42,9 @@ out_file = str(sys.argv[3])
 #####################################################
 #Secondary parameters
 
-min_wave = 3 #microns
-max_wave = 18 #microns
-num_channels = 10
+min_wave = 4 #microns
+max_wave = 19 #microns
+num_channels = 50
 
 #input planet data
 planet_path = "PPop/LifeTechSimTestPlanetPopulation.txt"
@@ -79,11 +79,6 @@ elif architecture == 4:
 elif architecture == 5:
     from engine.nullers.linear_assymmetric import get_nuller_response
     architecture_verbose = "Four telescope assymetric linear nuller"
-    base_scale_factor = 0.4
-
-elif architecture == 6:
-    from engine.nullers.four_telescopes import get_nuller_response
-    architecture_verbose = "Four telescope kernel nuller, optimised for K3"
     base_scale_factor = 0.4
 
 elif architecture == 7:

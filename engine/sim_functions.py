@@ -330,10 +330,10 @@ Output:
 """
 def stellar_leakage(star,response_func,baseline,spec):
 
+    sz = 500
+
     #calculate transmission (field of view has a radius equal to 5x star's angular radius)
     outputs = response_func(baseline,10*star.angRad/rad2mas,sz,spec.baseline_wave)
-
-    sz = 500
 
     #Create an array
     arr = np.arange(sz)-sz/2
@@ -344,7 +344,7 @@ def stellar_leakage(star,response_func,baseline,spec):
     for (res,ker) in outputs:
 
         temp_leakage = []
-        for i, wave in spec.channel_centres:
+        for i, wave in enumerate(spec.channel_centres):
 
             r = np.sqrt(x**2 + y**2)
             r *= 10/sz #Full grid is 5x the radius
@@ -495,7 +495,7 @@ def calc_exozodiacal(star,outputs,local_zodi,wave_pix2mas,sz,spec):
 
         #Calculate exozodiacal flux for each wavelength channel
         temp_exozodi = []
-        for i, wave in spec.channel_centres:
+        for i, wave in enumerate(spec.channel_centres):
 
             pix2mas = wave_pix2mas*wave
 
