@@ -494,7 +494,7 @@ def calc_exozodiacal(star,outputs,local_zodi,pix2mas,sz,spec):
     #Column density distribution of zodiacal dust (IS THIS SCALING TRUE...) YES SEE BELOW
     #EXO-ZODI MODELLING FOR THE LARGE BINOCULAR TELESCOPE INTERFEROMETER - Kennedy 2015!
     with np.errstate(divide='ignore', invalid='ignore'):
-        column_density = lambda_r*r**(-0.3)
+        column_density = lambda_r*r**(-0.34)
     column_density[int(sz/2),int(sz/2)] = 0
 
     #Temperature distribution of zodiacal dust (IS THIS SCALING TRUE???)

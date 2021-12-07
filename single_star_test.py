@@ -7,7 +7,7 @@ from snr_calculator import total_SNR, grab_SNR_per_kernel
 
 #Main parameters
 mode = 2 #1 is search mode, 2 is characterisation mode
-architecture = 7
+architecture = 2
 main_wave = 15
 spec = Spectrograph(3,18,main_wave,10) #min,max,baseline_wavelength,num_channels
 planet_path = "PPop/TestPlanetPopulation2.txt" #Input planet data
@@ -47,7 +47,7 @@ if architecture == 1:
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
     architecture_verbose = "Linear four telescope nuller"
-    base_scale_factor = 1
+    base_scale_factor = 0.4
 
 elif architecture == 3:
     from engine.nullers.three_telescopes import get_nuller_response

@@ -4,10 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import cycler
+import cmasher as cmr
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
-architecture = 7
+architecture = 1
 base_wave = 15
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -17,7 +18,7 @@ max_wave = 18
 num_channels = 10
 base_wave*=1e-6
 
-sz = 2000 #Size of grid
+sz = 1000 #Size of grid
 
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
@@ -53,6 +54,8 @@ class Spectrograph():
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
+fov_scale_factor = 3
+
 
 #Set architecture, and define the baseline scale factor
 if architecture == 1:
@@ -131,7 +134,7 @@ wave_pix2mas = pix2mas/base_wave
 
 #Get response maps
 outputs = get_nuller_response(baseline,fov,sz,base_wave)
-
+"""
 signal = []
 pos = []
 for (res,k) in outputs: #For each kernel output
@@ -155,24 +158,19 @@ pos = np.array(pos)
 summed_signal = np.sum(signal,axis=(0,1))
 arg = np.argmax(summed_signal)
 pos2 = pos[:,:,arg]
-
+"""
 
 color = plt.cm.winter(np.linspace(0, 1,num_channels))
 mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-"""import pokepalette
-import vapeplot
-pokecmap = pokepalette.get_colormap('pikachu')
-pokecmap = vapeplot.cmap('vaporwave')
 i=0
 for (res,k) in outputs:
     plt.figure(i)
     plt.clf()
-    plt.imshow(k,cmap=pokecmap,extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
+    plt.imshow(k,extent=[-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor,-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor],cmap="cmr.waterlily") #Plot the kernel map
     plt.colorbar(label="Transmission per telescope flux")
     i+=1
-    plt.legend()
-    plt.xlabel("Angular position")
-    plt.ylabel("Angular position")
+    plt.xlabel(r"Angular position ($\lambda_B/B$)")
+    plt.ylabel(r"Angular position ($\lambda_B/B$)")
 """
 i=0
 for (res,k) in outputs:
@@ -189,5 +187,5 @@ for (res,k) in outputs:
     plt.xlabel("Angular position normalised by\n baseline optimised position")
     plt.ylabel("Angular position normalised by\n baseline optimised position")
     plt.title("K%s Transmission map and planet positions as a function of wavelength \n for the %s architecture\n and a reference wavelength of %s um" %(i,architecture_verbose,round_sig_figs(base_wave*1e6,2)))
-
+"""
 plt.show()
