@@ -32,11 +32,11 @@ def azimuthal_rms(image,r):
 
 
 ######################
-architecture = 5
+architecture = 1
 
 wavelength = 15e-6 #m
 sz = 400 #Size of grid
-fov_scale_factor = 2 #Field of view scale factor
+fov_scale_factor = 5 #Field of view scale factor
 
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
@@ -55,6 +55,7 @@ if architecture == 1:
 elif architecture == 2:
     from engine.nullers.linear import get_nuller_response
     architecture_verbose = "Linear four telescope nuller"
+    base_scale_factor = 0.4
 
 elif architecture == 3:
     from engine.nullers.three_telescopes import get_nuller_response
@@ -124,7 +125,7 @@ for j in range(len(outputs)):
     plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1))
 plt.title("Transmission per kernel output")
 plt.ylabel("Transmission per telescope")
-plt.xlabel(r"Angular distance ($\lambda/B$)")
+plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")
 plt.legend()
 
 #Plot radial RMS average for the sum of each kernel output in units of lambda/B
@@ -133,7 +134,7 @@ plt.figure(i+1)
 plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,np.sum(ks,axis=0))
 plt.title("Total transmission")
 plt.ylabel("Transmission per telescope")
-plt.xlabel(r"Angular distance ($\lambda/B$)")
+plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")
 
 #Plot radial RMS average for each kernel output in units of mas
 plt.figure(i+2)
@@ -141,4 +142,4 @@ for j in range(len(outputs)):
     plt.plot(rs*pix2mas,ks[j],label="K%s"%(j+1))
 plt.title("Transmission per kernel output")
 plt.ylabel("Transmission per telescope")
-plt.xlabel(r"Angular distance (mas)")
+plt.xlabel(r"Angular radial distance (mas)")
