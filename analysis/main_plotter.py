@@ -21,9 +21,9 @@ eta = 0.05
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
 
 mode_names = ["Search", "Characterisation"]
-arch_ls = [1,3,4,7,8,9,10]
-n_scopes = [4,3,4,5,5,5,5]
-arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
+arch_ls = [1,2,3,4,7,8,9,10]
+n_scopes = [4,4,3,4,5,5,5,5]
+arch_names = ["Bracewell","Linear","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
 
 
@@ -137,25 +137,25 @@ def sorted_indices(arr):
     a.reverse()
     return np.array(a)-1
 
-def char_plots(wave,n_planets):
+def char_plots(wave,base_arch,n_planets):
 
     n_tot_ls = []
 
-    bracewell_results = load_results(prefix,1,2,wave)
-    bracewell_results.sort(key=lambda item: item.get("planet_name"))
+    base_results = load_results(prefix,base_arch,2,wave)
+    base_results.sort(key=lambda item: item.get("planet_name"))
 
     #bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True") & (d["planet_radius"] < 1.9)]
-    bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True")]
+    base_results = [d for d in base_results if (d["habitable"] == "True")]
 
-    bracewell_SNR_arr = []
+    base_SNR_arr = []
     baseline_arr = []
-    for item in bracewell_results:
+    for item in base_results:
         baseline_arr.append(item['baseline'])
-        bracewell_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,1,True,4))
+        base_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,1,True,4))
 
-    bracewell_SNR_arr = np.array(bracewell_SNR_arr)
+    base_SNR_arr = np.array(base_SNR_arr)
 
-    indices = sorted_indices(bracewell_SNR_arr)
+    indices = sorted_indices(base_SNR_arr)
 
     n_indices = []
     count = 0
@@ -182,11 +182,11 @@ def char_plots(wave,n_planets):
 
         ratio_SNR_arr = []
 
-        for item,bracewell_SNR in zip(np.array(results)[n_indices],bracewell_SNR_arr[n_indices]):
+        for item,base_SNR in zip(np.array(results)[n_indices],base_SNR_arr[n_indices]):
             tot_SNR_arr = total_SNR_from_dict(item,D,t,eta,zod_fac,True,n)
             if (item['baseline'] > baseline_max) or (item['baseline'] < baseline_min):
                 tot_SNR_arr = 0
-            ratio = tot_SNR_arr/bracewell_SNR
+            ratio = tot_SNR_arr/base_SNR
             ratio_SNR_arr.append(ratio)
 
         output_snr_ratio.append(ratio_SNR_arr)
@@ -207,12 +207,12 @@ def char_plots(wave,n_planets):
     plt.xlabel('Planet no.')
     plt.ylabel('Bracewell/Emma X-array SNR')
     plt.title('SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
-    plt.plot(np.array(range(n_planets))+1, bracewell_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
+    plt.plot(np.array(range(n_planets))+1, base_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
 
     plt.show()
     return
 
-
+#Plot SNR as a function of wavelength for a given planet with certain components removed
 def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
     output_snr_ratio = []
@@ -248,7 +248,7 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
     linestyles = ["-","--"]
 
-    waves = np.linspace(3,18,10)
+    waves = np.linspace(4,19,50)
     plt.figure(1)
     plt.clf()
     for j in range(len(snr_1)):
@@ -261,6 +261,7 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
     plt.show()
     return
 
+#Plot all architectures SNR as a function of wavelength
 def snr_wave_plot(mode,wave,planet_index):
 
     color = plt.cm.tab10(np.linspace(0, 1,10))
@@ -299,7 +300,7 @@ def snr_wave_plot(mode,wave,planet_index):
 
         combined_snr = np.sqrt(np.sum(snr**2,axis=0))
 
-        waves = np.linspace(3,18,10)
+        waves = np.linspace(4,19,50)
 
         plt.plot(waves,combined_snr,label=name)
 
@@ -316,6 +317,8 @@ def round_sig_figs(x, p):
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
 
+
+#Plot noise sources for a given planet as a function of wavelength
 def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     results = load_results(prefix,arch,mode,wave)
     item = results[planet_index]
@@ -347,7 +350,7 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     exozodiacal = 2*np.array(item["exozodiacal"])*A
     zodiacal = 2*np.array(item["zodiacal"])*zod_fac
 
-    waves = np.linspace(3,18,10)
+    waves = np.linspace(4,19,50)
 
     plt.figure(1)
     plt.clf()
