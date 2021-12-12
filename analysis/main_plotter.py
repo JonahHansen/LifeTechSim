@@ -18,7 +18,7 @@ n_universes = 10
 
 eta = 0.05
 
-prefix = "../data/avatar_run"
+prefix = "/data/motley/jhansen/LifeSimData/"
 
 mode_names = ["Search", "Characterisation"]
 arch_ls = [1,3,4,7,8,9,10]
