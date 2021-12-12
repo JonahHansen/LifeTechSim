@@ -25,8 +25,6 @@ arch_ls = [1,2,3,4,7,8,9,10]
 n_scopes = [4,4,3,4,5,5,5,5]
 arch_names = ["Bracewell","Linear","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
-
-
 #pokemon_colours("charmander")
 
 def bar_plots(wave):
