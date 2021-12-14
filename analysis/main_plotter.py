@@ -143,6 +143,18 @@ def char_plots(wave,base_arch,n_planets):
 
     n_tot_ls = []
 
+    if base_arch == 4:
+        zod_fac = 0.5
+    else:
+        zod_fac = 1
+
+    if base_arch >= 7:
+        n = 5
+    elif base_arch == 3:
+        n = 3
+    else:
+        n = 4
+
     base_results = load_results(prefix,base_arch,2,wave)
     base_results.sort(key=lambda item: item.get("planet_name"))
 
@@ -153,7 +165,7 @@ def char_plots(wave,base_arch,n_planets):
     baseline_arr = []
     for item in base_results:
         baseline_arr.append(item['baseline'])
-        base_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,1,True,4))
+        base_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
     base_SNR_arr = np.array(base_SNR_arr)
 
@@ -202,7 +214,7 @@ def char_plots(wave,base_arch,n_planets):
     for i,arch_ratio in enumerate(output_snr_ratio):
         plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=5,ms=20,label=arch_names[i])
     plt.legend()
-    plt.savefig("Char_plot_%s_arch_%s_micron.png"%(base_arch,wave))
+    plt.savefig(img_folder+"Char_plot_%s_arch_%s_micron.png"%(base_arch,wave))
 
     """
     plt.figure(2)
@@ -221,7 +233,7 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
     output_snr_ratio = []
 
-    if ar == 4:
+    if arch == 4:
         zod_fac = 0.5
     else:
         zod_fac = 1
@@ -261,6 +273,9 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
         plt.plot(waves,snr_4[j],c="c",ls=linestyles[j],label="K%s, No leakage noise"%(j+1))
         plt.plot(waves,snr_1[j],c="b",ls=linestyles[j],label="K%s, All noise"%(j+1))
 
+
+    plt.xlabel("Wavelength (microns)")
+    plt.ylabel("SNR")
     plt.legend()
     plt.show()
     return
@@ -375,9 +390,9 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     return
 
 def make_plots(wave):
-    bar_plots(wave)
-    char_plots(wave,1,25)
-    char_plots(wave,2,25)
+    #bar_plots(wave)
+    #char_plots(wave,1,25)
+    #char_plots(wave,2,25)
     char_plots(wave,3,25)
     char_plots(wave,4,25)
     char_plots(wave,7,25)
