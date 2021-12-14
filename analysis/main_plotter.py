@@ -19,7 +19,7 @@ n_universes = 10
 eta = 0.05
 
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
-
+img_folder = "plots/"
 mode_names = ["Search", "Characterisation"]
 arch_ls = [1,2,3,4,7,8,9,10]
 n_scopes = [4,4,3,4,5,5,5,5]
@@ -96,6 +96,7 @@ def bar_plots(wave):
     plt.title('Total planets detected')
     plt.bar(range(len(n_tot_ls)), n_tot_ls)
     plt.legend()
+    plt.savefig(img_folder+"Total_planets_bar_%s_micron.png"%wave)
 
     plt.figure(2)
     plt.xticks(range(len(n_hab_ls)), arch_names)
@@ -104,6 +105,7 @@ def bar_plots(wave):
     plt.title('Habitable planets detected')
     plt.bar(range(len(n_hab_ls)), n_hab_ls)
     plt.legend()
+    plt.savefig(img_folder+"Habitable_planets_bar_%s_micron.png"%wave)
 
     plt.figure(3)
     width = 0.3
@@ -114,6 +116,7 @@ def bar_plots(wave):
     plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R<1.9)")
     plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R>1.9)")
     plt.legend()
+    plt.savefig(img_folder+"Radius_planets_bar_%s_micron.png"%wave)
 
     plt.figure(4)
     width = 0.25
@@ -125,8 +128,9 @@ def bar_plots(wave):
     plt.bar(np.arange(len(n_temp_ls)), n_temp_ls, width=width, label="Temperate (250<T<350K)")
     plt.bar(np.arange(len(n_hot_ls))+ width, n_hot_ls, width=width, label="Hot (T>350K)")
     plt.legend()
+    plt.savefig(img_folder+"Temperature_planets_bar_%s_micron.png"%wave)
 
-    plt.show()
+    #plt.show()
 
     return
 
@@ -198,7 +202,9 @@ def char_plots(wave,base_arch,n_planets):
     for i,arch_ratio in enumerate(output_snr_ratio):
         plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=5,ms=20,label=arch_names[i])
     plt.legend()
+    plt.savefig("Char_plot_%s_arch_%s_micron.png"%(base_arch,wave))
 
+    """
     plt.figure(2)
     plt.clf()
     #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
@@ -206,8 +212,8 @@ def char_plots(wave,base_arch,n_planets):
     plt.ylabel('Bracewell/Emma X-array SNR')
     plt.title('SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
     plt.plot(np.array(range(n_planets))+1, base_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
-
-    plt.show()
+    """
+    #plt.show()
     return
 
 #Plot SNR as a function of wavelength for a given planet with certain components removed
@@ -367,3 +373,14 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     plt.legend()
     plt.show()
     return
+
+def make_plots(wave):
+    bar_plots(wave)
+    char_plots(wave,1,25)
+    char_plots(wave,2,25)
+    char_plots(wave,3,25)
+    char_plots(wave,4,25)
+    char_plots(wave,7,25)
+    char_plots(wave,8,25)
+    char_plots(wave,9,25)
+    char_plots(wave,10,25)
