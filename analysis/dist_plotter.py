@@ -67,11 +67,11 @@ def get_snr_by_dist(arch,wave,star_index,planet_index,n_telescopes):
 
 def make_plot(wave,star_index,planet_index):
 
-    arch = [1,3,4,7,8]
-    n_scopes = [4,3,4,5,5]
-    arch_names = ["Bracewell","Three_telescopes","Four_telescopes","Five_telescopes_K1","Five_telescopes_K2"]
+    arch = [1,2,3,4,7,8,9,10]
+    n_scopes = [4,4,3,4,5,5,5,5]
+    arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
-    colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple']
+    colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', "tab:brown", "tab:pink", "tab:gray"]
 
     dist_a,baseline,snr_b = get_snr_by_dist(1,wave,star_index,planet_index,4)
 

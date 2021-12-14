@@ -8,7 +8,7 @@ import cmasher as cmr
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
-architecture = 1
+architecture = 10
 base_wave = 15
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -54,7 +54,7 @@ class Spectrograph():
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
-fov_scale_factor = 3
+#fov_scale_factor = 3
 
 
 #Set architecture, and define the baseline scale factor
@@ -140,7 +140,7 @@ wave_pix2mas = pix2mas/base_wave
 
 #Get response maps
 outputs = get_nuller_response(baseline,fov,sz,base_wave)
-"""
+
 signal = []
 pos = []
 for (res,k) in outputs: #For each kernel output
@@ -182,7 +182,7 @@ i=0
 for (res,k) in outputs:
     plt.figure(i)
     plt.clf()
-    plt.imshow(k,cmap="RdGy",extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
+    plt.imshow(k,cmap="cmr.waterlily",extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
     plt.plot(0,0,marker="*",c="orange",markersize=20)
     plt.colorbar(label="Transmission per telescope flux")
     pos_k = pos2[i]
@@ -193,5 +193,5 @@ for (res,k) in outputs:
     plt.xlabel("Angular position normalised by\n baseline optimised position")
     plt.ylabel("Angular position normalised by\n baseline optimised position")
     plt.title("K%s Transmission map and planet positions as a function of wavelength \n for the %s architecture\n and a reference wavelength of %s um" %(i,architecture_verbose,round_sig_figs(base_wave*1e6,2)))
-"""
+
 plt.show()

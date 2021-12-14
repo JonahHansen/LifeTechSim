@@ -215,7 +215,7 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
     output_snr_ratio = []
 
-    if ar == 4:
+    if arch == 4:
         zod_fac = 0.5
     else:
         zod_fac = 1
