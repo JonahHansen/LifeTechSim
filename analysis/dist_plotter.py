@@ -69,7 +69,7 @@ def make_plot(wave,star_index,planet_index):
 
     arch = [1,2,3,4,7,8,9,10]
     n_scopes = [4,4,3,4,5,5,5,5]
-    arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
+    arch_names = ["Bracewell","Linear","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
     colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', "tab:brown", "tab:pink", "tab:gray"]
 
