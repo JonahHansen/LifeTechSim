@@ -3,9 +3,12 @@ from snr_calculator import total_SNR_from_dict
 import matplotlib.pyplot as plt
 import json
 from bisect import bisect_left, bisect_right
+import cmasher as cmr
 
 star_types = ["A6V","F7V","G2V","K2V","M5V"]
 planets = ["Inner HZ", "Mid HZ", "Outer HZ"]
+
+colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
 
 baseline_min = 5
 baseline_max = 600
@@ -16,6 +19,7 @@ eta = 0.05
 
 SNR_threshold = 7
 
+img_folder = "new_plots/"
 
 """
 Load list of dictionaries from a JSON file.
@@ -67,11 +71,9 @@ def get_snr_by_dist(arch,wave,star_index,planet_index,n_telescopes):
 
 def make_plot(wave,star_index,planet_index):
 
-    arch = [1,2,3,4,7,8,9,10]
-    n_scopes = [4,4,3,4,5,5,5,5]
-    arch_names = ["Bracewell","Linear","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
-
-    colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', "tab:brown", "tab:pink", "tab:gray"]
+    arch = [1,3,4,8,7,10]
+    n_scopes = [4,3,4,5,5,5]
+    arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (0.66)","Kernel 5 (1.03)","Kernel 5 (1.68)"]
 
     dist_a,baseline,snr_b = get_snr_by_dist(1,wave,star_index,planet_index,4)
 
@@ -105,7 +107,8 @@ def make_plot(wave,star_index,planet_index):
     plt.figure(2)
     plt.xlabel("Distance (pc)")
     plt.ylabel("Relative SNR to Bracewell")
-    plt.title("Relative SNR against distance for planets in the %s\n for a %s type star at %s microns" %(planets[planet_index],star_types[star_index],wave))
+    plt.title("Relative SNR against distance for planets in the %s\n for a %s type star" %(planets[planet_index],star_types[star_index]))
     plt.legend()
+    plt.savefig(img_folder+"Dist_plot_%s_planet_%s_star.pdf"%(planets[planet_index],star_types[star_index]),bbox_inches='tight',dpi=100)
 
     return

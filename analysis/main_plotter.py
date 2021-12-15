@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import json
 import operator
-import cycler
+import cmasher as cmr
 #from pokemon_matplotlib import pokemon_colours
+
+colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
 
 baseline_min = 5 #FINE FOR ALL (As baseline refers to smallest baseline)
 baseline_max = 600 #Possibly problematic... especially for bracewell which has 6x smaller limit
@@ -19,11 +21,11 @@ n_universes = 10
 eta = 0.05
 
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
-img_folder = "plots/"
+img_folder = "new_plots/"
 mode_names = ["Search", "Characterisation"]
-arch_ls = [1,2,3,4,7,8,9,10]
-n_scopes = [4,4,3,4,5,5,5,5]
-arch_names = ["Bracewell","Linear","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
+arch_ls = [1,3,4,8,7,10]
+n_scopes = [4,3,4,5,5,5]
+arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5\n(0.66)","Kernel 5\n(1.03)","Kernel 5\n(1.68)"]
 
 #pokemon_colours("charmander")
 
@@ -31,6 +33,7 @@ def bar_plots(wave):
 
     n_tot_ls = []
     n_hab_ls = []
+    n_hab_rock_ls = []
 
     planet_rad_divider = 1.9
     n_rock_ls = []
@@ -52,6 +55,7 @@ def bar_plots(wave):
 
         tot_SNR_arr = []
         hab_SNR_arr = []
+        hab_rock_SNR_arr = []
 
         rock_SNR_arr = []
         gas_SNR_arr = []
@@ -65,6 +69,8 @@ def bar_plots(wave):
                 tot_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
                 if item["habitable"] == 'True':
                     hab_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    if item["planet_radius"] <planet_rad_divider:
+                        hab_rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
                 if item["planet_radius"] >planet_rad_divider:
                     gas_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
@@ -81,6 +87,7 @@ def bar_plots(wave):
 
         n_tot_ls.append(np.sum(np.array(tot_SNR_arr)>SNR_threshold)/n_universes)
         n_hab_ls.append(np.sum(np.array(hab_SNR_arr)>SNR_threshold)/n_universes)
+        n_hab_rock_ls.append(np.sum(np.array(hab_rock_SNR_arr)>SNR_threshold)/n_universes)
 
         n_rock_ls.append(np.sum(np.array(rock_SNR_arr)>SNR_threshold)/n_universes)
         n_gas_ls.append(np.sum(np.array(gas_SNR_arr)>SNR_threshold)/n_universes)
@@ -90,45 +97,60 @@ def bar_plots(wave):
         n_hot_ls.append(np.sum(np.array(hot_SNR_arr)>SNR_threshold)/n_universes)
 
     plt.figure(1)
+    plt.clf()
     plt.xticks(range(len(n_tot_ls)), arch_names)
     plt.xlabel('Architecture')
     plt.ylabel('Count (per universe)')
     plt.title('Total planets detected')
-    plt.bar(range(len(n_tot_ls)), n_tot_ls)
+    plt.bar(range(len(n_tot_ls)), n_tot_ls, color=colours[0])
     plt.legend()
-    plt.savefig(img_folder+"Total_planets_bar_%s_micron.png"%wave)
+    plt.savefig(img_folder+"Total_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
     plt.figure(2)
+    plt.clf()
     plt.xticks(range(len(n_hab_ls)), arch_names)
     plt.xlabel('Architecture')
     plt.ylabel('Count (per universe)')
-    plt.title('Habitable planets detected')
-    plt.bar(range(len(n_hab_ls)), n_hab_ls)
+    plt.title('Planets detected in the habitable zone')
+    plt.bar(range(len(n_hab_ls)), n_hab_ls, color=colours[0])
     plt.legend()
-    plt.savefig(img_folder+"Habitable_planets_bar_%s_micron.png"%wave)
+    plt.savefig(img_folder+"Habitable_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
     plt.figure(3)
+    plt.clf()
     width = 0.3
     plt.xticks(range(len(n_rock_ls)), arch_names)
     plt.xlabel('Architecture')
     plt.ylabel('Count (per universe)')
     plt.title('Planets detected against radius/composition')
-    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R<1.9)")
-    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R>1.9)")
+    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R_E<1.9)",color=colours[0])
+    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R_E>1.9)",color=colours[2])
     plt.legend()
-    plt.savefig(img_folder+"Radius_planets_bar_%s_micron.png"%wave)
+    plt.savefig(img_folder+"Radius_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
     plt.figure(4)
+    plt.clf()
     width = 0.25
     plt.xticks(range(len(n_cold_ls)), arch_names)
     plt.xlabel('Architecture')
     plt.ylabel('Count (per universe)')
     plt.title('Planets detected against temperature')
-    plt.bar(np.arange(len(n_cold_ls)) - width, n_cold_ls, width=width, label="Cold (T<250K)")
-    plt.bar(np.arange(len(n_temp_ls)), n_temp_ls, width=width, label="Temperate (250<T<350K)")
-    plt.bar(np.arange(len(n_hot_ls))+ width, n_hot_ls, width=width, label="Hot (T>350K)")
+    plt.bar(np.arange(len(n_cold_ls)) - width, n_cold_ls, width=width, label="Cold (T<250K)",color=colours[0])
+    plt.bar(np.arange(len(n_temp_ls)), n_temp_ls, width=width, label="Temperate (250<T<350K)",color=colours[2])
+    plt.bar(np.arange(len(n_hot_ls))+ width, n_hot_ls, width=width, label="Hot (T>350K)",color=colours[4])
     plt.legend()
-    plt.savefig(img_folder+"Temperature_planets_bar_%s_micron.png"%wave)
+    plt.savefig(img_folder+"Temperature_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
+
+    plt.figure(5)
+    plt.clf()
+    plt.xticks(range(len(n_hab_rock_ls)), arch_names)
+    plt.xlabel('Architecture')
+    plt.ylabel('Count (per universe)')
+    plt.title('Rocky planets detected in the habitable zone')
+    plt.bar(range(len(n_hab_rock_ls)), n_hab_rock_ls, color=colours[0])
+    plt.legend()
+    plt.savefig(img_folder+"Habitable_rocky_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
+
 
     #plt.show()
 
@@ -209,12 +231,12 @@ def char_plots(wave,base_arch,n_planets):
     plt.clf()
     #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
     plt.xlabel('Planet no.')
-    plt.ylabel('Relative SNR to Bracewell/Emma X-array')
-    plt.title('Architecture relative SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
+    plt.ylabel('Relative SNR to Bracewell/X-array')
+    plt.title('Architecture relative SNR for characterisation of \nthe 25 highest SNR planets in X-array configuration')
     for i,arch_ratio in enumerate(output_snr_ratio):
-        plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=5,ms=20,label=arch_names[i])
+        plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=3,ms=10,label=arch_names[i],color=colours[i])
     plt.legend()
-    plt.savefig(img_folder+"Char_plot_%s_arch_%s_micron.png"%(base_arch,wave))
+    plt.savefig(img_folder+"Char_plot_%s_arch_%s_micron.pdf"%(base_arch,wave),bbox_inches='tight',dpi=100)
 
     """
     plt.figure(2)
@@ -283,12 +305,9 @@ def snr_component_plot(arch,n_telescopes,wave,planet_index):
 #Plot all architectures SNR as a function of wavelength
 def snr_wave_plot(mode,wave,planet_index):
 
-    color = plt.cm.tab10(np.linspace(0, 1,10))
-    mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-
     plt.figure(1)
     plt.clf()
-    for a,n,name in zip(arch_ls,n_scopes,arch_names):
+    for i,a,n,name in zip(range(6),arch_ls,n_scopes,arch_names):
 
         if a == 4:
             zod_fac = 0.5
@@ -305,6 +324,7 @@ def snr_wave_plot(mode,wave,planet_index):
         item = np.array(results)[planet_index]
 
         print("###################\nPlanet data\n####################")
+        print(item["planet_name"])
         print("Star distance = %s"%item["star_distance"])
         print("Star type = %s"%item["star_type"])
         print("Planet angle = %s"%item["planet_angle"])
@@ -321,13 +341,13 @@ def snr_wave_plot(mode,wave,planet_index):
 
         waves = np.linspace(4,19,50)
 
-        plt.plot(waves,combined_snr,label=name)
+        plt.plot(waves,combined_snr,label=name,color=colours[i])
 
-    plt.xlabel("Wavelength (um)")
+    plt.xlabel(r"Wavelength ($\mu$m)")
     plt.ylabel("SNR")
-    plt.title("SNR against wavelength for %s\n with a reference wavelength of %s um"%(mode_names[mode-1],wave))
     plt.legend()
-    plt.show()
+    plt.savefig(img_folder+"SNR_wavelength_1_18_%s.pdf"%planet_index,bbox_inches='tight',dpi=100)
+    #plt.show()
     return
 
 
