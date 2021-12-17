@@ -16,6 +16,7 @@ eta = 0.05
 SNR_threshold = 7
 n_universes = 10
 
+#Output parameters
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
 img_folder = "paper_plots/"
 mode_names = ["Search", "Characterisation"]
@@ -56,8 +57,7 @@ def calc_fringe_RMS(wave):
                 tot_SNR = total_SNR(snr_ls)
                 if tot_SNR > SNR_threshold:
                     idx = np.argmax(snr_ls)
-                    temp_D = D*np.sqrt(4/n)
-                    A = np.pi*D**2/4
+                    A = np.pi*(D*np.sqrt(4/n))**2/4
                     zod = np.array(item["zodiacal"])[idx%50]/A/(np.array(item["leakage"]).flatten()[idx])
                     fringe_rms = np.sqrt(zod)*waves[idx%50]/2/np.pi
                     wave_ls.append(waves[idx%50])

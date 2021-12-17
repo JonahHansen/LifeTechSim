@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import cmasher as cmr
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
@@ -32,11 +33,11 @@ def azimuthal_rms(image,r):
 
 
 ######################
-architecture = 5
+architecture = 7
 
 wavelength = 15e-6 #m
 sz = 400 #Size of grid
-fov_scale_factor = 5 #Field of view scale factor
+fov_scale_factor = 2 #Field of view scale factor
 
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
@@ -119,10 +120,12 @@ for (res,k) in outputs: #For each kernel output
     plt.imshow(k) #Plot the kernel map
     i+=1
 
+colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
+
 #Plot radial RMS average for each kernel output in units of lambda/B
 plt.figure(i)
 for j in range(len(outputs)):
-    plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1))
+    plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1),color=colours[j*2])
 plt.title("Transmission per kernel output")
 plt.ylabel("Transmission per telescope")
 plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")
@@ -131,7 +134,7 @@ plt.legend()
 #Plot radial RMS average for the sum of each kernel output in units of lambda/B
 ks = np.array(ks)
 plt.figure(i+1)
-plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,np.sum(ks,axis=0))
+plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,np.sum(ks,axis=0),color=colours[0])
 plt.title("Total transmission")
 plt.ylabel("Transmission per telescope")
 plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")

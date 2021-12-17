@@ -5,21 +5,23 @@ import matplotlib as mpl
 import json
 import operator
 import cmasher as cmr
-#from pokemon_matplotlib import pokemon_colours
 
+#List of colours
 colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
 
-baseline_min = 5 #FINE FOR ALL (As baseline refers to smallest baseline)
-baseline_max = 600 #Possibly problematic... especially for bracewell which has 6x smaller limit
+#Baseline range
+baseline_min = 5
+baseline_max = 600
 
+#Telescope parameters
 D = 2
 t = 3600
-
-SNR_threshold = 7
-n_universes = 10
-
 eta = 0.05
 
+SNR_threshold = 7 #Threshold to determine if detectable
+n_universes = 10
+
+#Output parameters
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
 img_folder = "paper_plots/"
 mode_names = ["Search", "Characterisation"]
@@ -27,23 +29,29 @@ arch_ls = [1,3,4,8,7,10]
 n_scopes = [4,3,4,5,5,5]
 arch_names = ["X-array","Kernel-3","Kernel-4","Kernel-5\n(0.66)","Kernel-5\n(1.03)","Kernel-5\n(1.68)"]
 
-#pokemon_colours("charmander")
 
+"""
+Plot the number of detected planets as a function of architecture (and other parameters) for a given reference wavelength
+Inputs:
+    wave = reference wavelength [10,15,18] (microns)
+"""
 def bar_plots(wave):
 
-    n_tot_ls = []
-    n_hab_ls = []
-    n_hab_rock_ls = []
+    n_tot_ls = [] #Total planets
+    n_hab_ls = [] #Habitable zone planets
+    n_hab_rock_ls = [] #Habitable, rocky and temperate planets
 
-    planet_rad_divider = 1.9
-    n_rock_ls = []
-    n_gas_ls = []
+    planet_rad_divider = 1.9 #Separator between rocky and gaseous planets
+    n_rock_ls = [] #Rocky planets
+    n_gas_ls = [] #Gaseous planets
 
-    temp_zone_min = 250
-    temp_zone_max = 350
-    n_cold_ls = []
-    n_temp_ls = []
-    n_hot_ls = []
+    temp_zone_min = 250 #Minimum temperate temperature
+    temp_zone_max = 350 #Maximum temperate temperature
+    n_cold_ls = [] #Cold planets
+    n_temp_ls = [] #Temperate planets
+    n_hot_ls = [] #Hot planets
+
+    #For each architecture
     for a,n in zip(arch_ls,n_scopes):
 
         if a == 4:
@@ -74,11 +82,13 @@ def bar_plots(wave):
                             if item["planet_temp"] > temp_zone_min:
                                 hab_rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
+                #Detections as a function of radii
                 if item["planet_radius"] >planet_rad_divider:
                     gas_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
                 else:
                     rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
+                #Detections as a function of temperature
                 if item["planet_temp"] > temp_zone_max:
                     hot_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
                 elif item["planet_temp"] < temp_zone_min:
@@ -86,7 +96,7 @@ def bar_plots(wave):
                 else:
                     temp_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
-
+        #Check if detected!
         n_tot_ls.append(np.sum(np.array(tot_SNR_arr)>SNR_threshold)/n_universes)
         n_hab_ls.append(np.sum(np.array(hab_SNR_arr)>SNR_threshold)/n_universes)
         n_hab_rock_ls.append(np.sum(np.array(hab_rock_SNR_arr)>SNR_threshold)/n_universes)
@@ -153,17 +163,27 @@ def bar_plots(wave):
     plt.legend()
     plt.savefig(img_folder+"Habitable_temperate_rocky_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
-
-    #plt.show()
-
     return
 
+
+# Get a list of sorted indices based on an input array
 def sorted_indices(arr):
     a = [operator.itemgetter(0)(t) for t in sorted(enumerate(arr,1), key=operator.itemgetter(1))]
     a.reverse()
     return np.array(a)-1
 
-def char_plots(wave,base_arch,n_planets):
+
+"""
+Characterisation plot - plot of the top N habitable planets at a reference wavelength
+and their relative SNRs against a given architecture for all other architectures
+
+Inputs:
+    wave = reference wavelength [10,15,18] (microns)
+    base_arch = index of the architecture to calculate reference SNR
+    n_planets = how many planets in plot?
+
+"""
+def char_plots(wave,base_arch,n_planets=25):
 
     n_tot_ls = []
 
@@ -172,6 +192,7 @@ def char_plots(wave,base_arch,n_planets):
     else:
         zod_fac = 1
 
+    #Number of telescopes
     if base_arch >= 7:
         n = 5
     elif base_arch == 3:
@@ -182,7 +203,6 @@ def char_plots(wave,base_arch,n_planets):
     base_results = load_results(prefix,base_arch,2,wave)
     base_results.sort(key=lambda item: item.get("planet_name"))
 
-    #bracewell_results = [d for d in bracewell_results if (d["habitable"] == "True") & (d["planet_radius"] < 1.9)]
     base_results = [d for d in base_results if (d["habitable"] == "True")]
 
     base_SNR_arr = []
@@ -193,8 +213,10 @@ def char_plots(wave,base_arch,n_planets):
 
     base_SNR_arr = np.array(base_SNR_arr)
 
+    #indices of the planets sorted by SNR using the base_architecture
     indices = sorted_indices(base_SNR_arr)
 
+    #Take top n planets, and ensure that all are within the baseline limits
     n_indices = []
     count = 0
     i = 0
@@ -206,6 +228,7 @@ def char_plots(wave,base_arch,n_planets):
 
     output_snr_ratio = []
 
+    #Calculate relative SNR for each architecture
     for a,n in zip(arch_ls,n_scopes):
 
         if a == 4:
@@ -240,71 +263,18 @@ def char_plots(wave,base_arch,n_planets):
     plt.legend()
     plt.savefig(img_folder+"Char_plot_%s_arch_%s_micron.pdf"%(base_arch,wave),bbox_inches='tight',dpi=100)
 
-    """
-    plt.figure(2)
-    plt.clf()
-    #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
-    plt.xlabel('Planet no.')
-    plt.ylabel('Bracewell/Emma X-array SNR')
-    plt.title('SNR for characterisation at %s um of\n %s highest SNR planets in Emma X-array configuration'%(wave,n_planets))
-    plt.plot(np.array(range(n_planets))+1, base_SNR_arr[n_indices], ls="",marker="_", mew=5,ms=20)
-    """
-    #plt.show()
     return
 
-#Plot SNR as a function of wavelength for a given planet with certain components removed
-def snr_component_plot(arch,n_telescopes,wave,planet_index):
 
-    output_snr_ratio = []
+"""
+Plot all architectures SNR as a function of wavelength for a given planet
 
-    if arch == 4:
-        zod_fac = 0.5
-    else:
-        zod_fac = 1
+Inputs:
+    mode = search (0) or characterisation (1)
+    wave = reference wavelength [10,15,18]
+    planet_index = index of (habitable) planet to plot for
 
-    results = load_results(prefix,arch,2,wave)
-    results.sort(key=lambda item: item.get("planet_name"))
-
-    results = [d for d in results if d["habitable"] == "True"]
-
-    #plt.ioff()
-
-    item = np.array(results)[planet_index]
-
-    print("###################\nPlanet data\n####################")
-    print("Star distance = %s"%item["star_distance"])
-    print("Star type = %s"%item["star_type"])
-    print("Planet angle = %s"%item["planet_angle"])
-    print("Array angle = %s"%item["array_angle"])
-    print("Array baseline = %s"%item["baseline"])
-    print("Planet temp = %s"%item["planet_temp"])
-    print("Planet radius = %s"%item["planet_radius"])
-    print("Habitable? = %s"%item["habitable"])
-
-    snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes)
-    snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n_telescopes)
-    snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,exozodfac=0)
-    snr_4 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,stellarfac=0)
-
-    linestyles = ["-","--"]
-
-    waves = np.linspace(4,19,50)
-    plt.figure(1)
-    plt.clf()
-    for j in range(len(snr_1)):
-        plt.plot(waves,snr_2[j],c="g",ls=linestyles[j],label="K%s, No zodi noise"%(j+1))
-        plt.plot(waves,snr_3[j],c="r",ls=linestyles[j],label="K%s, No exozodi noise"%(j+1))
-        plt.plot(waves,snr_4[j],c="c",ls=linestyles[j],label="K%s, No leakage noise"%(j+1))
-        plt.plot(waves,snr_1[j],c="b",ls=linestyles[j],label="K%s, All noise"%(j+1))
-
-
-    plt.xlabel("Wavelength (microns)")
-    plt.ylabel("SNR")
-    plt.legend()
-    plt.show()
-    return
-
-#Plot all architectures SNR as a function of wavelength
+"""
 def snr_wave_plot(mode,wave,planet_index):
 
     plt.figure(1)
@@ -321,10 +291,9 @@ def snr_wave_plot(mode,wave,planet_index):
 
         results = [d for d in results if d["habitable"] == "True"]
 
-        #plt.ioff()
-
         item = np.array(results)[planet_index]
 
+        #print planet data
         print("###################\nPlanet data\n####################")
         print(item["planet_name"])
         print("Star distance = %s"%item["star_distance"])
@@ -335,7 +304,6 @@ def snr_wave_plot(mode,wave,planet_index):
         print("Planet temp = %s"%item["planet_temp"])
         print("Planet radius = %s"%item["planet_radius"])
         print("Habitable? = %s"%item["habitable"])
-
 
         snr = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
 
@@ -349,18 +317,100 @@ def snr_wave_plot(mode,wave,planet_index):
     plt.ylabel("SNR")
     plt.legend()
     plt.savefig(img_folder+"SNR_wavelength_1_18_%s.pdf"%planet_index,bbox_inches='tight',dpi=100)
-    #plt.show()
+
+    return
+
+########################### TEST PLOTS ###########################################
+
+"""
+Plot characterisation SNR as a function of wavelength for a given planet with certain components removed
+
+Inputs:
+    arch = architecure index
+    wave = wavelength [10,15,18] (microns)
+    n_telescopes = number of telescopes used in given architecture
+    planet_index = index of planet to plot for
+
+"""
+def snr_component_plot(arch,wave,n_telescopes,planet_index):
+
+    output_snr_ratio = []
+
+    if arch == 4:
+        zod_fac = 0.5
+    else:
+        zod_fac = 1
+
+    results = load_results(prefix,arch,2,wave)
+    results.sort(key=lambda item: item.get("planet_name"))
+
+    results = [d for d in results if d["habitable"] == "True"]
+
+    item = np.array(results)[planet_index]
+
+    print("###################\nPlanet data\n####################")
+    print("Star distance = %s"%item["star_distance"])
+    print("Star type = %s"%item["star_type"])
+    print("Planet angle = %s"%item["planet_angle"])
+    print("Array angle = %s"%item["array_angle"])
+    print("Array baseline = %s"%item["baseline"])
+    print("Planet temp = %s"%item["planet_temp"])
+    print("Planet radius = %s"%item["planet_radius"])
+    print("Habitable? = %s"%item["habitable"])
+
+    #Default SNR
+    snr_1 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes)
+    #No zodiacal
+    snr_2 = grab_SNR_per_kernel(item,D,t,eta,0,True,n_telescopes)
+    #No exozodiacal
+    snr_3 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,exozodfac=0)
+    #No stellar leakage
+    snr_4 = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n_telescopes,stellarfac=0)
+
+    linestyles = ["-","--"]
+
+    waves = np.linspace(4,19,50)
+    plt.figure(1)
+    plt.clf()
+    for j in range(len(snr_1)):
+        plt.plot(waves,snr_2[j],c="g",ls=linestyles[j],label="K%s, No zodi noise"%(j+1))
+        plt.plot(waves,snr_3[j],c="r",ls=linestyles[j],label="K%s, No exozodi noise"%(j+1))
+        plt.plot(waves,snr_4[j],c="c",ls=linestyles[j],label="K%s, No leakage noise"%(j+1))
+        plt.plot(waves,snr_1[j],c="b",ls=linestyles[j],label="K%s, All noise"%(j+1))
+
+    plt.xlabel("Wavelength (microns)")
+    plt.ylabel("SNR")
+    plt.legend()
+    plt.show()
     return
 
 
+"""
+Helper function to round number to a given number of sig figs
+
+Inputs:
+    x - number
+    p - precision (number of sig figs)
+"""
 def round_sig_figs(x, p):
     x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
 
 
-#Plot noise sources for a given planet as a function of wavelength
-def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
+"""
+Plot noise sources for a given planet as a function of wavelength
+
+Inputs:
+    arch = architecure index
+    mode = search (0) or characterisation (1)
+    wave = wavelength [10,15,18] (microns)
+    D = telescope diameter (m)
+    n_telescopes = number of telescopes used in given architecture
+    planet_index = index of planet to plot for
+
+"""
+def noise_contributions_plot(arch,mode,wave,D,n_telescopes,planet_index):
     results = load_results(prefix,arch,mode,wave)
     item = results[planet_index]
 
@@ -374,7 +424,7 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     print("Planet radius = %s"%item["planet_radius"])
     print("Habitable? = %s"%item["habitable"])
 
-    D *= np.sqrt(4/num_telescopes)
+    D *= np.sqrt(4/n_telescopes)
 
     A = np.pi*D**2/4
 
@@ -410,14 +460,3 @@ def noise_contributions_plot(planet_index,arch,mode,wave,D,num_telescopes):
     plt.legend()
     plt.show()
     return
-
-def make_plots(wave):
-    #bar_plots(wave)
-    #char_plots(wave,1,25)
-    #char_plots(wave,2,25)
-    char_plots(wave,3,25)
-    char_plots(wave,4,25)
-    char_plots(wave,7,25)
-    char_plots(wave,8,25)
-    char_plots(wave,9,25)
-    char_plots(wave,10,25)

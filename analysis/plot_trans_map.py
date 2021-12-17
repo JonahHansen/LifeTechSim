@@ -1,18 +1,22 @@
+#Plot the transmission maps, optionally with the planet location on top of it
+
 import sys
 sys.path.append("..")
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+from engine.sim_functions import Spectrograph
 import cycler
 import cmasher as cmr
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
+#Architecture and reference wavelength to use
 architecture = 10
 base_wave = 15
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
+#Spectral parameters
 min_wave = 3
 max_wave = 18
 num_channels = 10
@@ -23,34 +27,7 @@ sz = 1000 #Size of grid
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
 Dist = 6.65 #Pc
-HZAngle = np.sqrt(L)*1000/Dist
-HZAngle = 32.77
-
-######################
-class Spectrograph():
-    def __init__(self, wave_min, wave_max, baseline_wave, n_channels):
-
-        #Bandwidth of spectrograph
-        self.bandwidth = (wave_max-wave_min)*1e-6
-        #Mean wavelength of spectrograph
-        self.mean = (wave_max+wave_min)/2*1e-6
-        #Min and max wavelengths
-        self.wave_min = wave_min*1e-6
-        self.wave_max = wave_max*1e-6
-        #Number of channels
-        self.n_channels = n_channels
-
-        #Wavelength to set the baseline (optimisation baseline)
-        self.baseline_wave = baseline_wave*1e-6
-
-        #Channel borders (start of each channel)
-        self.channel_borders = np.linspace(self.wave_min,self.wave_max,n_channels+1)[:-1]
-        #Size of channel
-        self.dlambda = self.channel_borders[1]-self.channel_borders[0]
-        #Channel centres (middle of each channel)
-        self.channel_centres = (self.channel_borders + self.dlambda/2)
-        #Effective resolution of the spectrograph
-        self.eff_resolution = self.mean/self.dlambda
+HZAngle = 32.77 #angle to use for optimisation
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
@@ -91,9 +68,9 @@ elif architecture == 7:
 elif architecture == 8:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised at 0.66 B/lambda"
-    base_scale_factor = 0.660 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
+    base_scale_factor = 0.660
 
-elif architecture == 9: #THESE ARE ALTERNATIVES - MAY BE BETTER!
+elif architecture == 9:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised at 2.67 B/lambda"
     base_scale_factor = 2.67
@@ -101,8 +78,20 @@ elif architecture == 9: #THESE ARE ALTERNATIVES - MAY BE BETTER!
 elif architecture == 10:
     from engine.nullers.five_telescopes import get_nuller_response
     architecture_verbose = "Five telescope kernel nuller, optimised at 1.68 B/lambda"
-    base_scale_factor = 1.68 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
+    base_scale_factor = 1.68
 
+
+"""
+Calculate the array over azimuthal angles for a given response map and
+radial position
+
+Inputs:
+    image = response map
+    r = radial position to find the maximum over angles
+
+Outputs:
+    array of transmission over azimuthal angles, array of (x,y) positions
+"""
 def azimuthal_array(image,r):
 
     n_angles = 5000
@@ -127,6 +116,13 @@ def azimuthal_array(image,r):
 
     return np.array(arr), pos
 
+"""
+Helper function to round number to a given number of sig figs
+
+Inputs:
+    x - number
+    p - precision (number of sig figs)
+"""
 def round_sig_figs(x, p):
     x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
@@ -141,57 +137,61 @@ wave_pix2mas = pix2mas/base_wave
 #Get response maps
 outputs = get_nuller_response(baseline,fov,sz,base_wave)
 
-signal = []
-pos = []
-for (res,k) in outputs: #For each kernel output
-    temp_signal = []
-    temp_pos = []
-    for wave in spec.channel_centres:
-        planet_pos = HZAngle/(wave_pix2mas*wave) #in pixels
+#Plot just the transmission maps
+def plot_raw_map():
+    i=0
+    for (res,k) in outputs:
+        plt.figure(i)
+        plt.clf()
+        plt.imshow(k,extent=[-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor,-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor],cmap="cmr.waterlily") #Plot the kernel map
+        plt.colorbar(label="Transmission per telescope flux")
+        i+=1
+        plt.xlabel(r"Angular position ($\lambda_B/B$)")
+        plt.ylabel(r"Angular position ($\lambda_B/B$)")
 
-        #Characterisation mode is maximum of kernel azimuth
-        #import pdb; pdb.set_trace()
-        p_trans,p_pos = azimuthal_array(k,planet_pos)
-        temp_signal.append(np.abs(p_trans))
-        temp_pos.append(p_pos)
+    plt.show()
+    return 
 
-    signal.append(np.array(temp_signal))
-    pos.append(np.array(temp_pos))
+#Plot the transmission maps, with the planet functions as a function of wavelength overplotted
+def plot_planet_pos_map():
 
+    signal = []
+    pos = []
+    for (res,k) in outputs: #For each kernel output
+        temp_signal = []
+        temp_pos = []
+        for wave in spec.channel_centres:
+            planet_pos = HZAngle/(wave_pix2mas*wave) #in pixels
 
-signal = np.array(signal)
-pos = np.array(pos)
-summed_signal = np.sum(signal,axis=(0,1))
-arg = np.argmax(summed_signal)
-pos2 = pos[:,:,arg]
-"""
+            #Characterisation mode is maximum of kernel azimuth
+            p_trans,p_pos = azimuthal_array(k,planet_pos)
+            temp_signal.append(np.abs(p_trans))
+            temp_pos.append(p_pos)
 
-color = plt.cm.winter(np.linspace(0, 1,num_channels))
-mpl.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
-i=0
-for (res,k) in outputs:
-    plt.figure(i)
-    plt.clf()
-    plt.imshow(k,extent=[-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor,-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor],cmap="cmr.waterlily") #Plot the kernel map
-    plt.colorbar(label="Transmission per telescope flux")
-    i+=1
-    plt.xlabel(r"Angular position ($\lambda_B/B$)")
-    plt.ylabel(r"Angular position ($\lambda_B/B$)")
-"""
-i=0
-for (res,k) in outputs:
-    plt.figure(i)
-    plt.clf()
-    plt.imshow(k,cmap="cmr.waterlily",extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
-    plt.plot(0,0,marker="*",c="orange",markersize=20)
-    plt.colorbar(label="Transmission per telescope flux")
-    pos_k = pos2[i]
-    for j in range(len(pos_k)):
-        plt.scatter((pos_k.T[1][j]-sz/2)/(sz/2)*fov_scale_factor,(pos_k.T[0][j]-sz/2)/(sz/2)*fov_scale_factor,label=round_sig_figs(spec.channel_centres[j]*1e6,5))
-    i+=1
-    plt.legend()
-    plt.xlabel("Angular position normalised by\n baseline optimised position")
-    plt.ylabel("Angular position normalised by\n baseline optimised position")
-    plt.title("K%s Transmission map and planet positions as a function of wavelength \n for the %s architecture\n and a reference wavelength of %s um" %(i,architecture_verbose,round_sig_figs(base_wave*1e6,2)))
+        signal.append(np.array(temp_signal))
+        pos.append(np.array(temp_pos))
 
-plt.show()
+    signal = np.array(signal)
+    pos = np.array(pos)
+    summed_signal = np.sum(signal,axis=(0,1))
+    arg = np.argmax(summed_signal)
+    pos2 = pos[:,:,arg]
+
+    i=0
+    for (res,k) in outputs:
+        plt.figure(i)
+        plt.clf()
+        plt.imshow(k,cmap="cmr.waterlily",extent=[-fov_scale_factor,fov_scale_factor,-fov_scale_factor,fov_scale_factor]) #Plot the kernel map
+        plt.plot(0,0,marker="*",c="orange",markersize=20)
+        plt.colorbar(label="Transmission per telescope flux")
+        pos_k = pos2[i]
+        for j in range(len(pos_k)):
+            plt.scatter((pos_k.T[1][j]-sz/2)/(sz/2)*fov_scale_factor,(pos_k.T[0][j]-sz/2)/(sz/2)*fov_scale_factor,label=round_sig_figs(spec.channel_centres[j]*1e6,5))
+        i+=1
+        plt.legend()
+        plt.xlabel("Angular position normalised by\n baseline optimised position")
+        plt.ylabel("Angular position normalised by\n baseline optimised position")
+        plt.title("K%s Transmission map and planet positions as a function of wavelength \n for the %s architecture\n and a reference wavelength of %s um" %(i,architecture_verbose,round_sig_figs(base_wave*1e6,2)))
+
+    plt.show()
+    return
