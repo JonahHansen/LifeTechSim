@@ -21,11 +21,11 @@ n_universes = 10
 eta = 0.05
 
 prefix = "/data/motley/jhansen/LifeSimData/avatar_run"
-img_folder = "new_plots/"
+img_folder = "paper_plots/"
 mode_names = ["Search", "Characterisation"]
 arch_ls = [1,3,4,8,7,10]
 n_scopes = [4,3,4,5,5,5]
-arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5\n(0.66)","Kernel 5\n(1.03)","Kernel 5\n(1.68)"]
+arch_names = ["X-array","Kernel-3","Kernel-4","Kernel-5\n(0.66)","Kernel-5\n(1.03)","Kernel-5\n(1.68)"]
 
 #pokemon_colours("charmander")
 
@@ -70,7 +70,9 @@ def bar_plots(wave):
                 if item["habitable"] == 'True':
                     hab_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
                     if item["planet_radius"] <planet_rad_divider:
-                        hab_rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                        if item["planet_temp"] < temp_zone_max:
+                            if item["planet_temp"] > temp_zone_min:
+                                hab_rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
 
                 if item["planet_radius"] >planet_rad_divider:
                     gas_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
@@ -146,10 +148,10 @@ def bar_plots(wave):
     plt.xticks(range(len(n_hab_rock_ls)), arch_names)
     plt.xlabel('Architecture')
     plt.ylabel('Count (per universe)')
-    plt.title('Rocky planets detected in the habitable zone')
+    plt.title('Temperate rocky planets detected in the habitable zone')
     plt.bar(range(len(n_hab_rock_ls)), n_hab_rock_ls, color=colours[0])
     plt.legend()
-    plt.savefig(img_folder+"Habitable_rocky_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
+    plt.savefig(img_folder+"Habitable_temperate_rocky_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
 
     #plt.show()
@@ -231,7 +233,7 @@ def char_plots(wave,base_arch,n_planets):
     plt.clf()
     #plt.xticks(range(len(output_snr_ratio[0])), arch_names)
     plt.xlabel('Planet no.')
-    plt.ylabel('Relative SNR to Bracewell/X-array')
+    plt.ylabel('Relative SNR to X-array')
     plt.title('Architecture relative SNR for characterisation of \nthe 25 highest SNR planets in X-array configuration')
     for i,arch_ratio in enumerate(output_snr_ratio):
         plt.plot(np.array(range(n_planets))+1, arch_ratio, ls="",marker="_", mew=3,ms=10,label=arch_names[i],color=colours[i])

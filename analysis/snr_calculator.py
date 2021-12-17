@@ -268,9 +268,3 @@ def make_SNR_pie_chart(mode,wave_index,baseline_lim,per_telescope):
 
     maxidx = df.idxmax(axis=1)
     maxidx.value_counts().plot(kind='pie')
-
-
-def main(arch,mode,wave,D,t,eta):
-    prefix = "../out_data/avatar_test"
-    results = load_results(prefix,arch,mode,wave)
-    calc_SNR_hist(results,D,t,eta)
