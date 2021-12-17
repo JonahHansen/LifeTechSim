@@ -116,6 +116,7 @@ ra = 206.81560195
 dec = 17.45690446
 z = 1 #exozodi (same as solar system)
 
+#Generate stars of given types
 def Beta_Pic(dist):
     name = "Beta Pic analogue"
     stype = "A6V"
@@ -156,6 +157,7 @@ def Prox_Cen(dist):
     mass = 0.12
     return Star(name,5,dist,stype,rad,teff,mass,ra,dec,spec,z)
 
+#Helper function to generate Earth-twin planets
 def myPlanet(star,num,a):
 
     #Earth twin
@@ -169,6 +171,7 @@ def myPlanet(star,num,a):
 
     return Planet(star,0,star.SNumber,num,PRad,PMass,365,0,0,0,0,0,0,0,Ageom,a,a,AngSep,0,0,lam_ref,Temp,spec)
 
+#Give each star three planets aat the three different HZ places
 def append_planet_list(star):
     planet_inner = myPlanet(star,1,star.HZIn)
     planet_mid = myPlanet(star,2,star.HZMid)
@@ -180,6 +183,7 @@ def append_planet_list(star):
 
 dists = np.linspace(1,20,100)
 
+#Make the list of stars at given distances
 star_list = []
 for d in dists:
     star_list.append(append_planet_list(Beta_Pic(d)))
