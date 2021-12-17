@@ -1,3 +1,5 @@
+#File to plot the outputs from the dist_dependence_sim simulation.py
+
 import numpy as np
 from snr_calculator import total_SNR_from_dict
 import matplotlib.pyplot as plt
@@ -5,39 +7,48 @@ import json
 from bisect import bisect_left, bisect_right
 import cmasher as cmr
 
-star_types = ["A6V","F7V","G2V","K2V","M5V"]
-planets = ["Inner HZ", "Mid HZ", "Outer HZ"]
+star_types = ["A6V","F7V","G2V","K2V","M5V"] #List of star typesa
+planets = ["Inner HZ", "Mid HZ", "Outer HZ"] #List of planet locations
 
 colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
 
+#Min and max baselines allowed
 baseline_min = 5
 baseline_max = 600
 
+#Telescope parameters
 D = 2
 t = 3600
 eta = 0.05
 
 SNR_threshold = 7
 
+data_prefix = "/data/motley/jhansen/LifeSimData/avatar_dist_folder/avatar_dist_run"
+
 img_folder = "paper_plots/"
 
+arch_ls = [1,3,4,8,7,10] #indices of architecture run
+n_scopes = [4,3,4,5,5,5] #number of telescopes for each architecture
+arch_names = ["X-array","Kernel-3","Kernel-4","Kernel-5 (0.66)","Kernel-5 (1.03)","Kernel-5 (1.68)"]
+
 """
-Load list of dictionaries from a JSON file.
-Indices are based on how the output files are named
+Load list of dictionaries for a given star and planet from a JSON file.
+Indices are based on how the output files are named.
+
 
 Inputs:
     prefix = prefix of JSON files
     arch = architecure index
-    wave = wavelength [10,15,18]
-    star_types = "A6V","F7V","G2V","K2V","M5V" [1,2,3,4,5]
-    planets = 1,2,3
+    wave = wavelength [10,15,18] (microns)
+    star_index = index of "A6V","F7V","G2V","K2V","M5V" [1,2,3,4,5]
+    planets = index of "InnerHZ", "MidHZ", "OutHZ" [1,2,3]
 
 Output:
     list of dictionaries
 """
 def load_results(arch,wave,star_index,planet_index):
-    prefix = "/data/motley/jhansen/LifeSimData/avatar_dist_folder/avatar_dist_run"
-    filename = prefix+"_"+str(arch)+"_"+str(wave)+".json"
+
+    filename = data_prefix+"_"+str(arch)+"_"+str(wave)+".json"
     fin = open(filename,"r")
     data = json.load(fin)
     fin.close()
@@ -53,7 +64,24 @@ def load_results(arch,wave,star_index,planet_index):
 
     return sorted_list
 
+"""
+Get a list of SNRs, along with their baselines, for each distance of a given star and planet
+
+Inputs:
+    arch = architecure index
+    wave = wavelength [10,15,18] (microns)
+    star_index = index of "A6V","F7V","G2V","K2V","M5V" [1,2,3,4,5]
+    planets = index of "InnerHZ", "MidHZ", "OutHZ" [1,2,3]
+    n_telescopes = number of telescopes used in given architecture
+
+Outputs:
+    list of distances in pc
+    list of baselines in m
+    list of SNRs
+
+"""
 def get_snr_by_dist(arch,wave,star_index,planet_index,n_telescopes):
+    #load results
     res = load_results(arch,wave,star_index,planet_index)
 
     dist = []
@@ -69,12 +97,23 @@ def get_snr_by_dist(arch,wave,star_index,planet_index,n_telescopes):
 
     return np.array(dist), np.array(baseline), np.array(snr)
 
+
+"""
+Main function to plot the SNR data as a function of architecture, both in absolute and relative SNRs against the X-array configuration.
+
+Inputs:
+    wave = wavelength [10,15,18] (microns)
+    star_index = index of "A6V","F7V","G2V","K2V","M5V" [1,2,3,4,5]
+    planets = index of "InnerHZ", "MidHZ", "OutHZ" [1,2,3]
+
+Outputs:
+    Plot of SNR against distance for each architecture
+    Plot of relative SNR (to X-array) against distance for each architecture
+
+"""
 def make_plot(wave,star_index,planet_index):
 
-    arch = [1,3,4,8,7,10]
-    n_scopes = [4,3,4,5,5,5]
-    arch_names = ["X-array","Kernel-3","Kernel-4","Kernel-5 (0.66)","Kernel-5 (1.03)","Kernel-5 (1.68)"]
-
+    #Calculate x-array (bracewell) SNR
     dist_a,baseline,snr_b = get_snr_by_dist(1,wave,star_index,planet_index,4)
 
     plt.figure(1)
@@ -82,6 +121,7 @@ def make_plot(wave,star_index,planet_index):
     plt.figure(2)
     plt.clf()
 
+    #Plot each architecture's data, making baselines outside of set range as a dashed line
     for a,n,name,c in zip(arch,n_scopes,arch_names,colours):
         dist, baseline, snr = get_snr_by_dist(a,wave,star_index,planet_index,n)
         bad_index_max = bisect_right(baseline-baseline_max,0)

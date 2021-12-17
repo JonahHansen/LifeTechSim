@@ -21,3 +21,11 @@ The analysis component takes these outputs and calculates the SNR, as well as pl
 - main_sim.py - script for running the simulation over all stars from PPop
 - dist_dependence_sim.py - script for running the simulation on a set of simulated stars of given stellar types and distances
 - other scripts - various scripts for testing
+
+### Dependencies
+- numpy
+- matplotlib
+- scipy
+- healpy
+- astropy
+- cmasher
