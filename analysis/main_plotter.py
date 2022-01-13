@@ -171,6 +171,7 @@ def bar_plots(wave):
     plt.ylabel('Average Count')
     plt.title('Total planets detected')
     plt.bar(range(len(n_tot_ls)), n_tot_ls, color=colours[0])#, yerr=u_tot_ls, ecolor="#cccccc")
+    plt.ylim(top=700)
     plt.legend()
     plt.savefig(img_folder+"Total_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -181,6 +182,7 @@ def bar_plots(wave):
     plt.ylabel('Average Count')
     plt.title('Planets detected in the habitable zone')
     plt.bar(range(len(n_hab_ls)), n_hab_ls, color=colours[0])#, yerr=u_hab_ls, ecolor="#cccccc")
+    plt.ylim(top=75)
     plt.legend()
     plt.savefig(img_folder+"Habitable_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -191,8 +193,8 @@ def bar_plots(wave):
     plt.xlabel('Architecture')
     plt.ylabel('Average Count')
     plt.title('Planets detected against radius/composition')
-    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R_E<1.9)",color=colours[0])#, yerr=u_rock_ls, ecolor="#cccccc")
-    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R_E>1.9)",color=colours[2])#, yerr=u_gas_ls, ecolor="#cccccc")
+    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label=r"Rocky ($R_\oplus<1.5$)",color=colours[0])#, yerr=u_rock_ls, ecolor="#cccccc")
+    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label=r"Gas ($R_\oplus>1.5$)",color=colours[2])#, yerr=u_gas_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Radius_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -260,6 +262,7 @@ def char_plots(wave,base_arch,n_planets=25):
     base_results.sort(key=lambda item: item.get("planet_name"))
 
     base_results = [d for d in base_results if (d["habitable"] == "True")]
+    base_results = [d for d in base_results if (d["planet_radius"] < 14.3)]
 
     base_SNR_arr = []
     baseline_arr = []
@@ -284,6 +287,8 @@ def char_plots(wave,base_arch,n_planets=25):
 
     output_snr_ratio = []
 
+    print(n_indices)
+
     #Calculate relative SNR for each architecture
     for a,n in zip(arch_ls,n_scopes):
 
@@ -296,6 +301,7 @@ def char_plots(wave,base_arch,n_planets=25):
         results.sort(key=lambda item: item.get("planet_name"))
 
         results = [d for d in results if d["habitable"] == "True"]
+        results = [d for d in results if (d["planet_radius"] < 14.3)]
 
         ratio_SNR_arr = []
 
@@ -346,6 +352,7 @@ def snr_wave_plot(mode,wave,planet_index):
         results.sort(key=lambda item: item.get("planet_name"))
 
         results = [d for d in results if d["habitable"] == "True"]
+        results = [d for d in results if (d["planet_radius"] < 14.3)]
 
         item = np.array(results)[planet_index]
 
@@ -359,6 +366,7 @@ def snr_wave_plot(mode,wave,planet_index):
         print("Array baseline = %s"%item["baseline"])
         print("Planet temp = %s"%item["planet_temp"])
         print("Planet radius = %s"%item["planet_radius"])
+        print("Exozodi = %s"%item["zodis"])
         print("Habitable? = %s"%item["habitable"])
 
         snr = grab_SNR_per_kernel(item,D,t,eta,zod_fac,True,n)
