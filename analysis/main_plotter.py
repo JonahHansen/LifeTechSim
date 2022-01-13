@@ -1,10 +1,11 @@
 import numpy as np
-from snr_calculator import total_SNR_from_dict,load_results,grab_SNR_per_kernel,get_data_one_planet
+from snr_calculator import total_SNR_from_dict,load_results,grab_SNR_per_kernel
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import json
 import operator
 import cmasher as cmr
+from collections import Counter
 
 #List of colours
 colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
@@ -15,7 +16,7 @@ baseline_max = 600
 
 #Telescope parameters
 D = 2
-t = 3600
+t = 60*60*5
 eta = 0.05
 
 SNR_threshold = 7 #Threshold to determine if detectable
@@ -41,7 +42,7 @@ def bar_plots(wave):
     n_hab_ls = [] #Habitable zone planets
     n_hab_rock_ls = [] #Habitable, rocky and temperate planets
 
-    planet_rad_divider = 1.9 #Separator between rocky and gaseous planets
+    planet_rad_divider = 1.5 #Separator between rocky and gaseous planets
     n_rock_ls = [] #Rocky planets
     n_gas_ls = [] #Gaseous planets
 
@@ -50,6 +51,19 @@ def bar_plots(wave):
     n_cold_ls = [] #Cold planets
     n_temp_ls = [] #Temperate planets
     n_hot_ls = [] #Hot planets
+
+
+    u_tot_ls = [] #Total planets
+    u_hab_ls = [] #Habitable zone planets
+    u_hab_rock_ls = [] #Habitable, rocky and temperate planets
+
+    u_rock_ls = [] #Rocky planets
+    u_gas_ls = [] #Gaseous planets
+
+    u_cold_ls = [] #Cold planets
+    u_temp_ls = [] #Temperate planets
+    u_hot_ls = [] #Hot planets
+
 
     #For each architecture
     for a,n in zip(arch_ls,n_scopes):
@@ -74,29 +88,63 @@ def bar_plots(wave):
 
         for item in results:
             if (item['baseline'] <= baseline_max) &  (item['baseline'] >= baseline_min):
-                tot_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                tot_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
                 if item["habitable"] == 'True':
-                    hab_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    hab_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
                     if item["planet_radius"] <planet_rad_divider:
                         if item["planet_temp"] < temp_zone_max:
                             if item["planet_temp"] > temp_zone_min:
-                                hab_rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                                hab_rock_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
 
                 #Detections as a function of radii
                 if item["planet_radius"] >planet_rad_divider:
-                    gas_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    gas_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
                 else:
-                    rock_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    rock_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
 
                 #Detections as a function of temperature
                 if item["planet_temp"] > temp_zone_max:
-                    hot_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    hot_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
                 elif item["planet_temp"] < temp_zone_min:
-                    cold_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    cold_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
                 else:
-                    temp_SNR_arr.append(total_SNR_from_dict(item,D,t,eta,zod_fac,True,n))
+                    temp_SNR_arr.append((total_SNR_from_dict(item,D,t,eta,zod_fac,True,n),item["universe_no"]))
+
 
         #Check if detected!
+        temp_ls = [item[1] for item in tot_SNR_arr if item[0] > SNR_threshold]
+        u_tot_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_tot_ls.append(np.sum(np.array([1 for item in tot_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in hab_SNR_arr if item[0] > SNR_threshold]
+        u_hab_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_hab_ls.append(np.sum(np.array([1 for item in hab_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in hab_rock_SNR_arr if item[0] > SNR_threshold]
+        u_hab_rock_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_hab_rock_ls.append(np.sum(np.array([1 for item in hab_rock_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in rock_SNR_arr if item[0] > SNR_threshold]
+        u_rock_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_rock_ls.append(np.sum(np.array([1 for item in rock_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in gas_SNR_arr if item[0] > SNR_threshold]
+        u_gas_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_gas_ls.append(np.sum(np.array([1 for item in gas_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in cold_SNR_arr if item[0] > SNR_threshold]
+        u_cold_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_cold_ls.append(np.sum(np.array([1 for item in cold_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in temp_SNR_arr if item[0] > SNR_threshold]
+        u_temp_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_temp_ls.append(np.sum(np.array([1 for item in temp_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        temp_ls = [item[1] for item in hot_SNR_arr if item[0] > SNR_threshold]
+        u_hot_ls.append(np.std(list(Counter(temp_ls).values())))
+        n_hot_ls.append(np.sum(np.array([1 for item in hot_SNR_arr if item[0] > SNR_threshold]))/n_universes)
+
+        """
         n_tot_ls.append(np.sum(np.array(tot_SNR_arr)>SNR_threshold)/n_universes)
         n_hab_ls.append(np.sum(np.array(hab_SNR_arr)>SNR_threshold)/n_universes)
         n_hab_rock_ls.append(np.sum(np.array(hab_rock_SNR_arr)>SNR_threshold)/n_universes)
@@ -107,14 +155,17 @@ def bar_plots(wave):
         n_cold_ls.append(np.sum(np.array(cold_SNR_arr)>SNR_threshold)/n_universes)
         n_temp_ls.append(np.sum(np.array(temp_SNR_arr)>SNR_threshold)/n_universes)
         n_hot_ls.append(np.sum(np.array(hot_SNR_arr)>SNR_threshold)/n_universes)
+        """
+
+    print(u_tot_ls)
 
     plt.figure(1)
     plt.clf()
     plt.xticks(range(len(n_tot_ls)), arch_names)
     plt.xlabel('Architecture')
-    plt.ylabel('Count (per universe)')
+    plt.ylabel('Average Count')
     plt.title('Total planets detected')
-    plt.bar(range(len(n_tot_ls)), n_tot_ls, color=colours[0])
+    plt.bar(range(len(n_tot_ls)), n_tot_ls, color=colours[0], yerr=u_tot_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Total_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -122,9 +173,9 @@ def bar_plots(wave):
     plt.clf()
     plt.xticks(range(len(n_hab_ls)), arch_names)
     plt.xlabel('Architecture')
-    plt.ylabel('Count (per universe)')
+    plt.ylabel('Average Count')
     plt.title('Planets detected in the habitable zone')
-    plt.bar(range(len(n_hab_ls)), n_hab_ls, color=colours[0])
+    plt.bar(range(len(n_hab_ls)), n_hab_ls, color=colours[0], yerr=u_hab_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Habitable_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -133,10 +184,10 @@ def bar_plots(wave):
     width = 0.3
     plt.xticks(range(len(n_rock_ls)), arch_names)
     plt.xlabel('Architecture')
-    plt.ylabel('Count (per universe)')
+    plt.ylabel('Average Count')
     plt.title('Planets detected against radius/composition')
-    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R_E<1.9)",color=colours[0])
-    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R_E>1.9)",color=colours[2])
+    plt.bar(np.arange(len(n_rock_ls))-width/2, n_rock_ls, width=width, label="Rocky (R_E<1.9)",color=colours[0], yerr=u_rock_ls, ecolor="#cccccc")
+    plt.bar(np.arange(len(n_gas_ls))+ width/2, n_gas_ls, width=width, label="Gas (R_E>1.9)",color=colours[2], yerr=u_gas_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Radius_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -145,11 +196,11 @@ def bar_plots(wave):
     width = 0.25
     plt.xticks(range(len(n_cold_ls)), arch_names)
     plt.xlabel('Architecture')
-    plt.ylabel('Count (per universe)')
+    plt.ylabel('Average Count')
     plt.title('Planets detected against temperature')
-    plt.bar(np.arange(len(n_cold_ls)) - width, n_cold_ls, width=width, label="Cold (T<250K)",color=colours[0])
-    plt.bar(np.arange(len(n_temp_ls)), n_temp_ls, width=width, label="Temperate (250<T<350K)",color=colours[2])
-    plt.bar(np.arange(len(n_hot_ls))+ width, n_hot_ls, width=width, label="Hot (T>350K)",color=colours[4])
+    plt.bar(np.arange(len(n_cold_ls)) - width, n_cold_ls, width=width, label="Cold (T<250K)",color=colours[0], yerr=u_cold_ls, ecolor="#cccccc")
+    plt.bar(np.arange(len(n_temp_ls)), n_temp_ls, width=width, label="Temperate (250<T<350K)",color=colours[2], yerr=u_temp_ls, ecolor="#cccccc")
+    plt.bar(np.arange(len(n_hot_ls))+ width, n_hot_ls, width=width, label="Hot (T>350K)",color=colours[4], yerr=u_hot_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Temperature_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 
@@ -157,9 +208,9 @@ def bar_plots(wave):
     plt.clf()
     plt.xticks(range(len(n_hab_rock_ls)), arch_names)
     plt.xlabel('Architecture')
-    plt.ylabel('Count (per universe)')
+    plt.ylabel('Average Count')
     plt.title('Temperate rocky planets detected in the habitable zone')
-    plt.bar(range(len(n_hab_rock_ls)), n_hab_rock_ls, color=colours[0])
+    plt.bar(range(len(n_hab_rock_ls)), n_hab_rock_ls, color=colours[0], yerr=u_hab_rock_ls, ecolor="#cccccc")
     plt.legend()
     plt.savefig(img_folder+"Habitable_temperate_rocky_planets_bar_%s_micron.pdf"%wave,bbox_inches='tight',dpi=100)
 

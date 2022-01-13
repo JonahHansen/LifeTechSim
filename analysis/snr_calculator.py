@@ -46,8 +46,8 @@ def grab_SNR_per_kernel(dict,D,t,eta,zod_fac=1,const_total_area=False,num_telesc
 
     signal = np.array(dict["signal"])*A*t*eta
     shot = np.array(dict["shot"])*A*t*eta
-    leakage = np.array(dict["leakage"])*A*t*eta*stellarfac
-    exozodiacal = np.array(dict["exozodiacal"])*A*t*eta*exozodfac
+    leakage = np.array(dict["leakage"])*A*t*eta*stellar_fac
+    exozodiacal = np.array(dict["exozodiacal"])*A*t*eta*exozod_fac
     zodiacal = np.array(dict["zodiacal"])*t*eta*zod_fac
 
     return SNR(signal, shot, leakage, zodiacal, exozodiacal)
