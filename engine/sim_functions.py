@@ -79,6 +79,8 @@ def Planck_wrapper(T):
 #Limb darkening as a function of the fraction of stellar radius (1 = stellar radius)
 def limb_darkening(r):
     with np.errstate(divide='ignore', invalid='ignore'):
+        if r > 1:
+            r = 1
         mu = np.sqrt(1-r**2)
     return 1-0.05*(1-mu)-0.10*(1-mu)**2
 
@@ -225,7 +227,6 @@ def calc_planet_signal(outputs,planet,wave_pix2mas,spec,mode):
         signal.append(np.array(temp_signal))
 
     if mode == 2:
-        #import pdb; pdb.set_trace()
         signal = np.array(signal)
         summed_signal = np.sum(signal,axis=(0,1))
         arg = np.argmax(summed_signal)
