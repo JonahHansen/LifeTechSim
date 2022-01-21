@@ -4,14 +4,14 @@ import sys
 sys.path.append("..")
 import numpy as np
 import matplotlib.pyplot as plt
-from engine.sim_functions import Spectrograph
+#from engine.sim_functions import Spectrograph
 import cycler
 import cmasher as cmr
 
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 #Architecture and reference wavelength to use
-architecture = 10
+architecture = 43
 base_wave = 15
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -29,9 +29,35 @@ L = 0.6 #Lsol
 Dist = 6.65 #Pc
 HZAngle = 32.77 #angle to use for optimisation
 
+class Spectrograph():
+    def __init__(self, wave_min, wave_max, baseline_wave, n_channels):
+
+        #Bandwidth of spectrograph
+        self.bandwidth = (wave_max-wave_min)*1e-6
+        #Mean wavelength of spectrograph
+        self.mean = (wave_max+wave_min)/2*1e-6
+        #Min and max wavelengths
+        self.wave_min = wave_min*1e-6
+        self.wave_max = wave_max*1e-6
+        #Number of channels
+        self.n_channels = n_channels
+
+        #Wavelength to set the baseline (optimisation baseline)
+        self.baseline_wave = baseline_wave*1e-6
+
+        #Channel borders (start of each channel)
+        self.channel_borders = np.linspace(self.wave_min,self.wave_max,n_channels+1)[:-1]
+        #Size of channel
+        self.dlambda = self.channel_borders[1]-self.channel_borders[0]
+        #Channel centres (middle of each channel)
+        self.channel_centres = (self.channel_borders + self.dlambda/2)
+        #Effective resolution of the spectrograph
+        self.eff_resolution = self.mean/self.dlambda
+
+
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
-#fov_scale_factor = 3
+fov_scale_factor = 3
 
 
 #Set architecture, and define the baseline scale factor
@@ -80,6 +106,22 @@ elif architecture == 10:
     architecture_verbose = "Five telescope kernel nuller, optimised at 1.68 B/lambda"
     base_scale_factor = 1.68
 
+
+
+elif architecture == 54:
+    from engine.nullers.damaged import get_nuller_response_54 as get_nuller_response
+    architecture_verbose = "Four telescope assymetric linear nuller"
+    base_scale_factor = 1
+
+elif architecture == 53:
+    from engine.nullers.damaged import get_nuller_response_53 as get_nuller_response
+    architecture_verbose = "Four telescope assymetric linear nuller"
+    base_scale_factor = 1
+
+elif architecture == 43:
+    from engine.nullers.damaged import get_nuller_response_43 as get_nuller_response
+    architecture_verbose = "Four telescope assymetric linear nuller"
+    base_scale_factor = 1
 
 """
 Calculate the array over azimuthal angles for a given response map and
@@ -150,7 +192,7 @@ def plot_raw_map():
         plt.ylabel(r"Angular position ($\lambda_B/B$)")
 
     plt.show()
-    return 
+    return
 
 #Plot the transmission maps, with the planet functions as a function of wavelength overplotted
 def plot_planet_pos_map():
