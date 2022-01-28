@@ -92,7 +92,7 @@ Outputs:
 """
 def get_nuller_response(dphi,dR,baseline,fov,sz,base_wavelength):
 
-    M = make_nuller_mat5(dphi,dR)
+    M = calc_K5_M(dphi,dR)
 
     telescope_array = pentagon(baseline)
 

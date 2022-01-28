@@ -8,7 +8,7 @@ from multiprocessing import Pool
 import json
 import sys
 
-dR_scale = str(sys.argv[1])
+dR_scale = float(sys.argv[1])
 out_file = str(sys.argv[2])
 
 base_wave = 18
@@ -25,9 +25,8 @@ num_channels = 50
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 
 from engine.nullers.five_telescopes_err import get_nuller_response
-    architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2 alt)"
-    base_scale_factor = 1.028 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
-
+architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2 alt)"
+base_scale_factor = 1.028 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
 sz = 1500
 mode_verbose = "Search"
