@@ -115,19 +115,19 @@ for d in dists:
 dphi = np.zeros(10)
 dR = np.zeros(10)
 
-dphi[2] = (np.random.random()*2-1)*dphi_scale
-dphi[4] = (np.random.random()*2-1)*dphi_scale
-dphi[5] = (np.random.random()*2-1)*dphi_scale
-dphi[7] = (np.random.random()*2-1)*dphi_scale
-dphi[8] = (np.random.random()*2-1)*dphi_scale
-dphi[9] = (np.random.random()*2-1)*dphi_scale
+dphi[2] = np.sign(np.random.random()*2-1)*dphi_scale
+dphi[4] = np.sign(np.random.random()*2-1)*dphi_scale
+dphi[5] = np.sign(np.random.random()*2-1)*dphi_scale
+dphi[7] = np.sign(np.random.random()*2-1)*dphi_scale
+dphi[8] = np.sign(np.random.random()*2-1)*dphi_scale
+dphi[9] = np.sign(np.random.random()*2-1)*dphi_scale
 
-dR[2] = (np.random.random()*2-1)*dR_scale
-dR[4] = (np.random.random()*2-1)*dR_scale
-dR[5] = (np.random.random()*2-1)*dR_scale
-dR[7] = (np.random.random()*2-1)*dR_scale
-dR[8] = (np.random.random()*2-1)*dR_scale
-dR[9] = (np.random.random()*2-1)*dR_scale
+dR[2] = np.sign(np.random.random()*2-1)*dR_scale
+dR[4] = np.sign(np.random.random()*2-1)*dR_scale
+dR[5] = np.sign(np.random.random()*2-1)*dR_scale
+dR[7] = np.sign(np.random.random()*2-1)*dR_scale
+dR[8] = np.sign(np.random.random()*2-1)*dR_scale
+dR[9] = np.sign(np.random.random()*2-1)*dR_scale
 
 def response_func(baseline,fov,sz,base_wavelength):
     return get_nuller_response(dphi,dR,baseline,fov,sz,base_wavelength)
