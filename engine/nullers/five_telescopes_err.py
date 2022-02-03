@@ -1,6 +1,11 @@
 import numpy as np
 
 """
+K-5 nuller, except with errors introduced (see paper 7)
+
+"""
+
+"""
 Calculates the positions of five telescopes in a regular pentagonal formation.
 
 Inputs:
@@ -16,6 +21,16 @@ def pentagon(baseline):
     ys = R*np.sin(angles)
     return np.array([xs,ys]).T[:-1]
 
+
+"""
+Calculate the beam splitting module matrix
+
+Inputs:
+    n = size of beam combiner matrix
+    i = location of the beam splitter in the combiner
+    phi = phase shifting angle
+    theta = mixing angle for beamsplitter
+"""
 def calc_a(n,i,phi,theta):
     a = np.identity(n,complex)
 
@@ -26,8 +41,18 @@ def calc_a(n,i,phi,theta):
 
     return a
 
+
+
+"""
+Calculate the beam combiner matrix
+
+Inputs:
+    dphi = error in phase shifting angle
+    dR = error in beam splitter reflectance
+"""
 def calc_K5_M(dphi,dR):
 
+    #Mixing angles
     theta = np.array([7*np.pi/4,
                      np.arcsin(1/np.sqrt(3)),
                      np.arctan(np.sqrt(1/3*(4+np.sqrt(5)))),
@@ -39,6 +64,7 @@ def calc_K5_M(dphi,dR):
                      -np.arcsin(1/np.sqrt(3)),
                      -np.pi/4])
 
+    #Phase shifting angles
     phi = np.array([np.pi,
                      np.pi,
                      -np.pi/10+np.arctan(np.sqrt(5+2/np.sqrt(5))),
@@ -50,8 +76,10 @@ def calc_K5_M(dphi,dR):
                      -np.arctan(np.sqrt(5+2/np.sqrt(5))),
                      9*np.pi/10])
 
+    #Convert reflectance error to mixing angle error
     dtheta = dR/np.cos(theta)
 
+    #Beam splitter matrices
     a1 = calc_a(5,3,phi[0]+dphi[0],theta[0]+dtheta[0])
     a2 = calc_a(5,2,phi[1]+dphi[1],theta[1]+dtheta[1])
     a3 = calc_a(5,3,phi[2]+dphi[2],theta[2]+dtheta[2])
@@ -63,6 +91,7 @@ def calc_K5_M(dphi,dR):
     a9 = calc_a(5,2,phi[8]+dphi[8],theta[8]+dtheta[8])
     a10 = calc_a(5,3,phi[9]+dphi[9],theta[9]+dtheta[9])
 
+    #Phase shift at output
     C = np.identity(5,complex)
     C[4,4] = np.exp(1j*np.pi)
 
@@ -72,14 +101,14 @@ def calc_K5_M(dphi,dR):
     for ai in ls_mats:
         M = np.matmul(M,ai)
 
-    #M*=np.sqrt(5)
-
     return M
 
 """
-Function to calculate the response map of a five telescope kernel nuller interferometer.
+Function to calculate the response map of a five telescope kernel nuller interferometer with errors (see paper 7)
 
 Inputs:
+    dphi = error in phase shift plate of the beam combiner
+    dR = error in the reflectance of a beam splitter
     baseline = length of the shorter baseline in meters (adjacent telescopes)
     fov = total field of view of the interferometer in radians
     sz = size of the array

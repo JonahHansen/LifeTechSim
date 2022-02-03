@@ -8,7 +8,7 @@ from multiprocessing import Pool
 import json
 import sys
 
-dR_scale = float(sys.argv[1])
+dR_scale = float(sys.argv[1]) #Reflectance error in beamsplitter
 out_file = str(sys.argv[2])
 
 base_wave = 18
@@ -32,7 +32,7 @@ sz = 1500
 mode_verbose = "Search"
 fov_scale_factor = 5
 
-dphi_scale = np.radians(dR_scale*180/np.pi)
+dphi_scale = dR_scale
 number_processes = 28 #parallelise?
 ###########################################################################
 
@@ -96,7 +96,7 @@ def myPlanet(star,num,a):
 
     return Planet(star,0,star.SNumber,num,PRad,PMass,365,0,0,0,0,0,0,0,Ageom,a,a,AngSep,0,0,lam_ref,Temp,spec)
 
-#Give each star three planets aat the three different HZ places
+#Give each star one planet in the middle of the HZ
 def append_planet_list(star):
     star.Planets = [myPlanet(star,2,star.HZMid)]
     return star
@@ -111,6 +111,7 @@ for d in dists:
     star_list.append(append_planet_list(Prox_Cen(d)))
 
 
+#Make errors
 dphi = np.zeros(10)
 dR = np.zeros(10)
 
@@ -130,8 +131,6 @@ dR[9] = (np.random.random()*2-1)*dR_scale
 
 def response_func(baseline,fov,sz,base_wavelength):
     return get_nuller_response(dphi,dR,baseline,fov,sz,base_wavelength)
-
-
 
 ###########################################################################
 

@@ -1,6 +1,10 @@
 import numpy as np
 
 """
+Nuller functions for when a telescope is damaged, based on a "Guyon"-type beam combiner (see paper 7)
+"""
+
+"""
 Calculates the positions of four telescopes in a rectangular formation.
 
 Inputs:
@@ -22,14 +26,14 @@ def triangle(baseline):
     return np.array([xs,ys]).T[:-1]
 
 """
-Function to calculate the response map of a four telescope bracewell-type interferometer.
+Function to calculate the response map of a Damaged K-5 telescope interferometer with only three telescopes.
+Triangular arrangement
 
 Inputs:
     baseline = length of the shorter, nulling baseline in meters
     fov = total field of view of the interferometer in radians
     sz = size of the array
     base_wavelength = wavelength upon which the baseline is optimised. In meters
-    ratio = ratio of the imaging to nulling baseline. Default is 6
 
 Outputs:
     List of modulation maps of the form:
@@ -72,7 +76,7 @@ def get_nuller_response_53(baseline,fov,sz,base_wavelength):
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
     response = np.abs(response)**2 #To intensity
-    response /= (np.max(response[0])/5) #normalise by flux per telescope
+    response /= (np.max(response[0])/3) #normalise by flux per telescope
 
     #This is turning the output intensities into the kernel nulls (K in 2018 paper)
     k1 = response[1]-response[4]
@@ -81,8 +85,22 @@ def get_nuller_response_53(baseline,fov,sz,base_wavelength):
     return [(response[1],k1),(response[2],k2)] #return intensity per telescope
 
 
+"""
+Function to calculate the response map of a Damaged K-5 telescope interferometer with only four telescopes.
+Rectangular arrangement
 
+Inputs:
+    baseline = length of the shorter, nulling baseline in meters
+    fov = total field of view of the interferometer in radians
+    sz = size of the array
+    base_wavelength = wavelength upon which the baseline is optimised. In meters
+    ratio = ratio of the long side to the short side of the rectangle
 
+Outputs:
+    List of modulation maps of the form:
+        (Transmission map, Kernel map)
+    The transmission map is one of the nulled outputs that is chosen to create the kernel.
+"""
 def get_nuller_response_54(baseline,fov,sz,base_wavelength,ratio=6):
 
     a = 0.9510565162951535
@@ -114,7 +132,7 @@ def get_nuller_response_54(baseline,fov,sz,base_wavelength,ratio=6):
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
     response = np.abs(response)**2 #To intensity
-    response /= (np.max(response[0])/5) #normalise by flux per telescope
+    response /= (np.max(response[0])/4) #normalise by flux per telescope
 
     #This is turning the output intensities into the kernel nulls (K in 2018 paper)
     k1 = response[1]-response[4]
@@ -122,7 +140,21 @@ def get_nuller_response_54(baseline,fov,sz,base_wavelength,ratio=6):
 
     return [(response[1],k1),(response[2],k2)] #return intensity per telescope
 
+"""
+Function to calculate the response map of a Damaged X-array telescope interferometer with only three telescopes.
+Triangular arrangement
 
+Inputs:
+    baseline = length of the shorter, nulling baseline in meters
+    fov = total field of view of the interferometer in radians
+    sz = size of the array
+    base_wavelength = wavelength upon which the baseline is optimised. In meters
+
+Outputs:
+    List of modulation maps of the form:
+        (Transmission map, Kernel map)
+    The transmission map is one of the nulled outputs that is chosen to create the kernel.
+"""
 def get_nuller_response_43(baseline,fov,sz,base_wavelength):
 
     M = 1/np.sqrt(4)*np.array([[1,1,1],

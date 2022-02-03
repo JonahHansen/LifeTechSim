@@ -11,14 +11,14 @@ import cmasher as cmr
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 #Architecture and reference wavelength to use
-architecture = 43
-base_wave = 15
+architecture = 53
+base_wave = 18
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
 
 #Spectral parameters
-min_wave = 3
-max_wave = 18
+min_wave = 4
+max_wave = 19
 num_channels = 10
 base_wave*=1e-6
 
@@ -111,7 +111,7 @@ elif architecture == 10:
 elif architecture == 54:
     from engine.nullers.damaged import get_nuller_response_54 as get_nuller_response
     architecture_verbose = "Four telescope assymetric linear nuller"
-    base_scale_factor = 1
+    base_scale_factor = 0.59
 
 elif architecture == 53:
     from engine.nullers.damaged import get_nuller_response_53 as get_nuller_response
@@ -190,6 +190,8 @@ def plot_raw_map():
         i+=1
         plt.xlabel(r"Angular position ($\lambda_B/B$)")
         plt.ylabel(r"Angular position ($\lambda_B/B$)")
+        plt.tight_layout()
+        print(np.max(k))
 
     plt.show()
     return
