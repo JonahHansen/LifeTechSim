@@ -24,7 +24,7 @@ num_channels = 50
 #Set up the spectral parameters
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 
-from engine.nullers.five_telescopes_err import get_nuller_response
+from engine.nullers.five_telescopes_err_2 import get_nuller_response
 architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2 alt)"
 base_scale_factor = 1.028 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
