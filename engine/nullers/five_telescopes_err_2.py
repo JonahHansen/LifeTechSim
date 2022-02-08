@@ -149,4 +149,4 @@ def get_nuller_response(dphi,dR,baseline,fov,sz,base_wavelength):
     k1 = response[3]-response[4]
     k2 = response[1]-response[2]
 
-    return [(response[1],k1),(response[2],k2)] #return intensity per telescope
+    return [(response[3],k1),(response[1],k2)] #return intensity per telescope
