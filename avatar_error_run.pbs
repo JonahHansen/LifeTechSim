@@ -14,7 +14,7 @@ cd /avatar/jhansen/LifeTechSim
 
 ##### Execute Program #####
 source ../pyenv/bin/activate
-python error_sim.py 0 err_run_0.json
-python error_sim.py 0.02 err_run_002.json
-python error_sim.py 0.05 err_run_005.json
-python error_sim.py 0.1 err_run_01.json
+python error_sim3.py 0 err_run3_0.json
+python error_sim3.py 0.02 err_run3_002.json
+python error_sim3.py 0.05 err_run3_005.json
+python error_sim3.py 0.1 err_run3_01.json
