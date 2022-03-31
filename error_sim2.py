@@ -42,7 +42,7 @@ mode_verbose = "Search"
 fov_scale_factor = 5
 
 dphi_scale = dR_scale
-number_processes = 28 #parallelise?
+number_processes = 1 #parallelise?
 
     ###########################################################################
 for spec in new_specs:
@@ -111,7 +111,7 @@ for spec in new_specs:
         star.Planets = [myPlanet(star,2,star.HZMid)]
         return star
 
-    dists = np.linspace(1,20,20)
+    dists = np.array([1,2,5,10,15,20])
 
     #Make the list of stars at given distances
     star_list = []
@@ -129,10 +129,9 @@ for spec in new_specs:
     phase_chops = np.abs(np.array([2*phases,2*np.pi-2*np.abs(phases)]))
     min_phase_chops = phase_chops.T[np.arange(len(phase_chops.T)),np.argmin(phase_chops,axis=0)]
 
-    wave = spec.mean/1.6
+    wave = spec.mean*1e6
     centre = np.min(np.abs(central_waves-wave))+wave
-    phase_chop_errs = np.abs(min_phase_chops*wave/centre - min_phase_chops)
-
+    phase_chop_errs = np.abs(min_phase_chops/2*wave/centre - min_phase_chops/2)
 
     dphi[2] = phase_chop_errs[0]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
     dphi[4] = phase_chop_errs[1]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
@@ -140,6 +139,7 @@ for spec in new_specs:
     dphi[7] = phase_chop_errs[3]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
     dphi[8] = phase_chop_errs[4]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
     dphi[9] = phase_chop_errs[5]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+
 
     dR[2] = dR_scale#*np.sign(np.random.random()*2-1)
     dR[4] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
