@@ -28,7 +28,7 @@ central_waves = min_wave/2*np.exp(1/3*(np.log(max_wave)-np.log(min_wave))*np.arr
 
 new_specs = []
 for i in master_spec.channel_borders:
-    new_spec = Spectrograph(i*1e6,(i+master_spec.dlambda)*1e6,base_wave,5)
+    new_spec = Spectrograph(i*1e6,(i+master_spec.dlambda)*1e6,base_wave,2)
     new_specs.append(new_spec)
 
 main_dict_ls = []
@@ -134,19 +134,19 @@ for spec in new_specs:
     phase_chop_errs = np.abs(min_phase_chops*wave/centre - min_phase_chops)
 
 
-    dphi[2] = phase_chop_errs[0]+np.sign(np.random.random()*2-1)*dphi_scale
-    dphi[4] = phase_chop_errs[1]+np.sign(np.random.random()*2-1)*dphi_scale
-    dphi[5] = phase_chop_errs[2]+np.sign(np.random.random()*2-1)*dphi_scale
-    dphi[7] = phase_chop_errs[3]+np.sign(np.random.random()*2-1)*dphi_scale
-    dphi[8] = phase_chop_errs[4]+np.sign(np.random.random()*2-1)*dphi_scale
-    dphi[9] = phase_chop_errs[5]+np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[2] = phase_chop_errs[0]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[4] = phase_chop_errs[1]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[5] = phase_chop_errs[2]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[7] = phase_chop_errs[3]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[8] = phase_chop_errs[4]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
+    dphi[9] = phase_chop_errs[5]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
 
-    dR[2] = np.sign(np.random.random()*2-1)*dR_scale
-    dR[4] = np.sign(np.random.random()*2-1)*dR_scale
-    dR[5] = np.sign(np.random.random()*2-1)*dR_scale
-    dR[7] = np.sign(np.random.random()*2-1)*dR_scale
-    dR[8] = np.sign(np.random.random()*2-1)*dR_scale
-    dR[9] = np.sign(np.random.random()*2-1)*dR_scale
+    dR[2] = dR_scale#*np.sign(np.random.random()*2-1)
+    dR[4] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
+    dR[5] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
+    dR[7] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
+    dR[8] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
+    dR[9] = dR_scale#*np.sign(np.random.random()*2-1)*dR_scale
 
     def response_func(baseline,fov,sz,base_wavelength):
         return get_nuller_response(dphi,dR,baseline,fov,sz,base_wavelength)
