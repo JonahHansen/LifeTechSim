@@ -130,7 +130,7 @@ for spec in new_specs:
     min_phase_chops = phase_chops.T[np.arange(len(phase_chops.T)),np.argmin(phase_chops,axis=0)]
 
     wave = spec.mean/1.6
-    centre = np.min(np.abs(channel_centres-wave))+wave
+    centre = np.min(np.abs(central_waves-wave))+wave
     phase_chop_errs = np.abs(min_phase_chops*wave/centre - min_phase_chops)
 
 
