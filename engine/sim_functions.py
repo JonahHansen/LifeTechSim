@@ -413,10 +413,6 @@ def calc_local_zodiacal_minimum(spec):
         #Interpolate the zodiacal background onto the spectrograph grid
         filter_waves = np.linspace(spec.wave_min,spec.wave_max,2000)
 
-        print(waves)
-        print(filter_waves)
-        print(spec.wave_min,spec.wave_max)
-
         f_zodi = interp1d(waves,zodi_data)
 
         #multiply by filter transmission

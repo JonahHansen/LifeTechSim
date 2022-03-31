@@ -28,7 +28,7 @@ central_waves = min_wave/2*np.exp(1/3*(np.log(max_wave)-np.log(min_wave))*np.arr
 
 new_specs = []
 for i in master_spec.channel_borders:
-    new_spec = Spectrograph(i,i+master_spec.dlambda,base_wave,5)
+    new_spec = Spectrograph(i*1e6,(i+master_spec.dlambda)*1e6,base_wave,5)
     new_specs.append(new_spec)
 
 main_dict_ls = []
