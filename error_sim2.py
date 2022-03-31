@@ -42,7 +42,7 @@ mode_verbose = "Search"
 fov_scale_factor = 5
 
 dphi_scale = dR_scale
-number_processes = 28 #parallelise?
+number_processes = 1 #parallelise?
 
     ###########################################################################
 for spec in new_specs:
@@ -126,7 +126,7 @@ for spec in new_specs:
     dR = np.zeros(10)
 
     phases = [-2.055,-2.840,0.810,2.997,-0.494,-1.571]
-    phase_chops = np.abs([2*phases,2*np.pi-2*np.abs(phases)])
+    phase_chops = np.abs(np.array([2*phases,2*np.pi-2*np.abs(phases)]))
     min_phase_chops = phase_chops.T[np.arange(len(phase_chops.T)),np.argmin(phase_chops,axis=0)]
 
     wave = spec.mean/1.6
