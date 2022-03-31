@@ -125,7 +125,7 @@ for spec in new_specs:
     dphi = np.zeros(10)
     dR = np.zeros(10)
 
-    phases = [-2.055,-2.840,0.810,2.997,-0.494,-1.571]
+    phases = np.array([-2.055,-2.840,0.810,2.997,-0.494,-1.571])
     phase_chops = np.abs(np.array([2*phases,2*np.pi-2*np.abs(phases)]))
     min_phase_chops = phase_chops.T[np.arange(len(phase_chops.T)),np.argmin(phase_chops,axis=0)]
 
