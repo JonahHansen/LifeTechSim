@@ -42,7 +42,7 @@ mode_verbose = "Search"
 fov_scale_factor = 5
 
 dphi_scale = dR_scale
-number_processes = 1 #parallelise?
+number_processes = 28 #parallelise?
 
     ###########################################################################
 for spec in new_specs:
