@@ -37,7 +37,7 @@ architecture = 7
 
 wavelength = 15e-6 #m
 sz = 400 #Size of grid
-fov_scale_factor = 2 #Field of view scale factor
+fov_scale_factor = 3#Field of view scale factor
 
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
@@ -122,14 +122,19 @@ for (res,k) in outputs: #For each kernel output
 
 colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt='hex')
 
+fig_folder = "/Users/jhansen/Desktop/paper_arch_figs/"
 #Plot radial RMS average for each kernel output in units of lambda/B
-plt.figure(i)
+plt.figure(i,figsize=(5,4))
+plt.clf()
 for j in range(len(outputs)):
     plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1),color=colours[j*2])
-plt.title("Transmission per kernel output")
-plt.ylabel("Transmission per telescope")
+#plt.title("Transmission per kernel output")
+plt.ylabel("Modulation efficiency (telescope fluxes)")
 plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")
+plt.axvline(x=base_scale_factor,c="k",ls="--")
+plt.tight_layout()
 plt.legend()
+plt.savefig(fig_folder+"mod_eff"+str(architecture)+".pdf")
 
 #Plot radial RMS average for the sum of each kernel output in units of lambda/B
 ks = np.array(ks)

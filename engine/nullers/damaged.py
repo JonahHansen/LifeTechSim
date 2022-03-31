@@ -50,9 +50,9 @@ def get_nuller_response_53(baseline,fov,sz,base_wavelength):
     f = 0.3918568348616487
 
     N = 1/np.sqrt(5)*np.array([[1,1,1],
+                                [np.sqrt(5)/6+b*1j,np.sqrt(5)/6-d*1j,-np.sqrt(5)/3+f*1j],
+                                [np.sqrt(5)/6-b*1j,np.sqrt(5)/6+d*1j,-np.sqrt(5)/3-f*1j],
                                 [-np.sqrt(5)/6+a*1j,-np.sqrt(5)/6-c*1j,np.sqrt(5)/3-e*1j],
-                                [-np.sqrt(5)/6+b*1j,-np.sqrt(5)/6-d*1j,np.sqrt(5)/3+f*1j],
-                                [-np.sqrt(5)/6-b*1j,-np.sqrt(5)/6+d*1j,np.sqrt(5)/3-f*1j],
                                 [-np.sqrt(5)/6-a*1j,-np.sqrt(5)/6+c*1j,np.sqrt(5)/3+e*1j]])
 
 
@@ -76,13 +76,13 @@ def get_nuller_response_53(baseline,fov,sz,base_wavelength):
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
     response = np.abs(response)**2 #To intensity
-    response /= (np.max(response[0])/3) #normalise by flux per telescope
+    #response /= (np.max(response[0])/3) #normalise by flux per telescope
 
     #This is turning the output intensities into the kernel nulls (K in 2018 paper)
-    k1 = response[1]-response[4]
-    k2 = response[2]-response[3]
+    k1 = response[3]-response[4]
+    k2 = response[1]-response[2]
 
-    return [(response[1],k1),(response[2],k2)] #return intensity per telescope
+    return [(response[3],k1),(response[1],k2)] #return intensity per telescope
 
 
 """
@@ -107,12 +107,12 @@ def get_nuller_response_54(baseline,fov,sz,base_wavelength,ratio=6):
     b = 0.5877852522924732
 
     N = 1/np.sqrt(5)*np.array([[1,1,1,1],
-                                [np.sqrt(5)/4+a*1j,-np.sqrt(5)/4+b*1j,-np.sqrt(5)/4-b*1j,np.sqrt(5)/4-a*1j],
-                                [np.sqrt(5)/4-b*1j,-np.sqrt(5)/4+a*1j,-np.sqrt(5)/4-a*1j,np.sqrt(5)/4+b*1j],
-                                [np.sqrt(5)/4+b*1j,-np.sqrt(5)/4-a*1j,-np.sqrt(5)/4+a*1j,np.sqrt(5)/4-b*1j],
-                                [np.sqrt(5)/4-a*1j,-np.sqrt(5)/4-b*1j,-np.sqrt(5)/4+b*1j,np.sqrt(5)/4+a*1j]])
+                                [-np.sqrt(5)/4-a*1j,np.sqrt(5)/4+b*1j,np.sqrt(5)/4-b*1j,-np.sqrt(5)/4+a*1j],
+                                [-np.sqrt(5)/4+a*1j,np.sqrt(5)/4-b*1j,np.sqrt(5)/4+b*1j,-np.sqrt(5)/4-a*1j],
+                                [np.sqrt(5)/4+b*1j,-np.sqrt(5)/4+a*1j,-np.sqrt(5)/4-a*1j,np.sqrt(5)/4-b*1j],
+                                [np.sqrt(5)/4-b*1j,-np.sqrt(5)/4-a*1j,-np.sqrt(5)/4+a*1j,np.sqrt(5)/4+b*1j]])
 
-    telescope_array = rectangle(baseline,ratio)
+    telescope_array = rectangle(baseline,ratio)[[0,1,2,3]]
 
     sky_angles = np.linspace(-fov/2,fov/2,sz)
 
@@ -132,13 +132,13 @@ def get_nuller_response_54(baseline,fov,sz,base_wavelength,ratio=6):
             response[k] += np.exp(2*np.pi*1j*(xy[0]*x[i] + xy[1]*y[i]))*N[k,i] #
 
     response = np.abs(response)**2 #To intensity
-    response /= (np.max(response[0])/4) #normalise by flux per telescope
+    #response /= (np.max(response[0])/4) #normalise by flux per telescope
 
     #This is turning the output intensities into the kernel nulls (K in 2018 paper)
-    k1 = response[1]-response[4]
-    k2 = response[2]-response[3]
+    k1 = response[3]-response[4]
+    k2 = response[1]-response[2]
 
-    return [(response[1],k1),(response[2],k2)] #return intensity per telescope
+    return [(response[3],k1),(response[1],k2)] #return intensity per telescope
 
 """
 Function to calculate the response map of a Damaged X-array telescope interferometer with only three telescopes.

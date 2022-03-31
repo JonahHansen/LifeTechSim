@@ -4,6 +4,7 @@ import sys
 sys.path.append("..")
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as pat
 #from engine.sim_functions import Spectrograph
 import cycler
 import cmasher as cmr
@@ -11,7 +12,7 @@ import cmasher as cmr
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 #Architecture and reference wavelength to use
-architecture = 53
+architecture = 43
 base_wave = 18
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -57,7 +58,7 @@ class Spectrograph():
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
-fov_scale_factor = 3
+fov_scale_factor = 2
 
 
 #Set architecture, and define the baseline scale factor
@@ -180,20 +181,25 @@ wave_pix2mas = pix2mas/base_wave
 outputs = get_nuller_response(baseline,fov,sz,base_wave)
 
 #Plot just the transmission maps
+plt.figure(1,figsize=(4,3))
+fig_folder = "/Users/jhansen/Desktop/paper_arch_figs/"
 def plot_raw_map():
     i=0
     for (res,k) in outputs:
-        plt.figure(i)
+        plt.figure(i,figsize=(4,3))
         plt.clf()
-        plt.imshow(k,extent=[-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor,-fov_scale_factor/base_scale_factor,fov_scale_factor/base_scale_factor],cmap="cmr.waterlily") #Plot the kernel map
+        plt.imshow(k,extent=[-fov_scale_factor*base_scale_factor,fov_scale_factor*base_scale_factor,-fov_scale_factor*base_scale_factor,fov_scale_factor*base_scale_factor],cmap="cmr.fusion") #Plot the kernel map
+        #c = pat.Circle((0,0),radius=base_scale_factor,fill=False,lw=3,color="k")
+        #plt.gca().add_artist(c)
         plt.colorbar(label="Transmission per telescope flux")
         i+=1
         plt.xlabel(r"Angular position ($\lambda_B/B$)")
         plt.ylabel(r"Angular position ($\lambda_B/B$)")
         plt.tight_layout()
+        plt.savefig(fig_folder+"map"+str(architecture)+"_"+str(i)+".pdf")
         print(np.max(k))
 
-    plt.show()
+    #plt.show()
     return
 
 #Plot the transmission maps, with the planet functions as a function of wavelength overplotted
