@@ -45,7 +45,7 @@ class Spectrograph():
         self.channel_borders = np.linspace(self.wave_min,self.wave_max,n_channels+1)[:-1]
         #Size of channel
         if self.n_channels == 1:
-            self.dlambda = bandwidth
+            self.dlambda = self.bandwidth
         else:
             self.dlambda = self.channel_borders[1]-self.channel_borders[0]
         #Channel centres (middle of each channel)
