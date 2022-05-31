@@ -103,6 +103,16 @@ elif architecture == 10:
     architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2 alt)"
     base_scale_factor = 1.68
 
+elif architecture == 11:
+    from engine.nullers.four_telescopes_tri import get_nuller_response
+    architecture_verbose = "Four telescope kernel nuller in triangle formation"
+    base_scale_factor = 0.7
+
+elif architecture == 12:
+    from engine.nullers.seven_telescopes import get_nuller_response
+    architecture_verbose = "Seven telescope kernel nuller"
+    base_scale_factor = 0.86
+
 else:
     raise Exception("Architecture not recognised")
 

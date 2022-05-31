@@ -33,11 +33,11 @@ def azimuthal_rms(image,r):
 
 
 ######################
-architecture = 7
+architecture = 12
 
 wavelength = 15e-6 #m
 sz = 400 #Size of grid
-fov_scale_factor = 3#Field of view scale factor
+fov_scale_factor = 2#Field of view scale factor
 
 #What angle is the baseline to be optimised for?
 L = 0.6 #Lsol
@@ -98,6 +98,21 @@ elif architecture == 10:
     architecture_verbose = "Five telescope kernel nuller, optimised for diagonal telescopes (K2)"
     base_scale_factor = 1.68 #= approx 1.03*0.619 (where 0.619 is the conversion between a side and diagonal of a pentagon)
 
+elif architecture == 11:
+    from engine.nullers.four_telescopes_tri import get_nuller_response
+    architecture_verbose = "Four telescope kernel nuller in triangle formation"
+    base_scale_factor = 0.7
+
+elif architecture == 12:
+    from engine.nullers.seven_telescopes import get_nuller_response
+    architecture_verbose = "Seven telescope kernel nuller"
+    base_scale_factor = 0.86
+
+elif architecture == 13:
+    from engine.nullers.seven_telescopes_tricky import get_nuller_response
+    architecture_verbose = "Seven telescope kernel nuller, tricky layout"
+    base_scale_factor = 1
+
 
 #baseline, fov defined as in the normal simulation
 baseline = base_scale_factor*wavelength*rad2mas/HZAngle
@@ -124,17 +139,19 @@ colours = cmr.take_cmap_colors('cmr.chroma', 6, cmap_range=(0.1,0.8), return_fmt
 
 fig_folder = "/Users/jhansen/Desktop/paper_arch_figs/"
 #Plot radial RMS average for each kernel output in units of lambda/B
+plt.rc('font', size=14.5)
 plt.figure(i,figsize=(5,4))
 plt.clf()
 for j in range(len(outputs)):
     plt.plot(rs*pix2mas/rad2mas*baseline/wavelength,ks[j],label="K%s"%(j+1),color=colours[j*2])
 #plt.title("Transmission per kernel output")
-plt.ylabel("Modulation efficiency (telescope fluxes)")
+plt.ylabel("Modulation efficiency\n(telescope fluxes)")
 plt.xlabel(r"Angular radial distance ($\lambda_B/B$)")
 plt.axvline(x=base_scale_factor,c="k",ls="--")
 plt.tight_layout()
 plt.legend()
-plt.savefig(fig_folder+"mod_eff"+str(architecture)+".pdf")
+plt.gcf().set_size_inches(5, 4)
+#plt.savefig(fig_folder+"mod_eff"+str(architecture)+".pdf")
 
 #Plot radial RMS average for the sum of each kernel output in units of lambda/B
 ks = np.array(ks)
@@ -151,3 +168,5 @@ for j in range(len(outputs)):
 plt.title("Transmission per kernel output")
 plt.ylabel("Transmission per telescope")
 plt.xlabel(r"Angular radial distance (mas)")
+
+plt.show()

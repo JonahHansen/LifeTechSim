@@ -12,7 +12,7 @@ import cmasher as cmr
 rad2mas = np.degrees(1)*3600e3 #Number of milliarcsec in one radian
 
 #Architecture and reference wavelength to use
-architecture = 43
+architecture = 7
 base_wave = 18
 
 arch_names = ["Bracewell","Kernel 3","Kernel 4","Kernel 5 (1.03)","Kernel 5 (0.66)","Kernel 5 (2.67)","Kernel 5 (1.68)"]
@@ -58,7 +58,7 @@ class Spectrograph():
 
 spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 fov_scale_factor = base_wave/(spec.channel_centres[0]) + 0.1
-fov_scale_factor = 2
+fov_scale_factor = 3
 
 
 #Set architecture, and define the baseline scale factor
@@ -181,21 +181,23 @@ wave_pix2mas = pix2mas/base_wave
 outputs = get_nuller_response(baseline,fov,sz,base_wave)
 
 #Plot just the transmission maps
-plt.figure(1,figsize=(4,3))
+plt.rc('font', size=14.5)
 fig_folder = "/Users/jhansen/Desktop/paper_arch_figs/"
 def plot_raw_map():
     i=0
     for (res,k) in outputs:
-        plt.figure(i,figsize=(4,3))
+        plt.figure(i,figsize=(5,4))
         plt.clf()
         plt.imshow(k,extent=[-fov_scale_factor*base_scale_factor,fov_scale_factor*base_scale_factor,-fov_scale_factor*base_scale_factor,fov_scale_factor*base_scale_factor],cmap="cmr.fusion") #Plot the kernel map
-        #c = pat.Circle((0,0),radius=base_scale_factor,fill=False,lw=3,color="k")
-        #plt.gca().add_artist(c)
-        plt.colorbar(label="Transmission per telescope flux")
+        c = pat.Circle((0,0),radius=base_scale_factor,fill=False,lw=3,color="k")
+        plt.gca().add_artist(c)
+        cbar = plt.colorbar(label="Transmission per telescope flux",fraction=0.046, pad=0.04)
+        #cbar.set_ticks([-1,0,1])
         i+=1
         plt.xlabel(r"Angular position ($\lambda_B/B$)")
         plt.ylabel(r"Angular position ($\lambda_B/B$)")
         plt.tight_layout()
+        plt.gcf().set_size_inches(5, 4)
         plt.savefig(fig_folder+"map"+str(architecture)+"_"+str(i)+".pdf")
         print(np.max(k))
 
