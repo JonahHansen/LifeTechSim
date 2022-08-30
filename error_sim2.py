@@ -24,7 +24,16 @@ num_channels = 50
 #Set up the spectral parameters
 master_spec = Spectrograph(min_wave,max_wave,base_wave,num_channels)
 
-central_waves = min_wave/2*np.exp(1/3*(np.log(max_wave)-np.log(min_wave))*np.array([1,2,3]))*(1+np.exp(-1/3*(np.log(max_wave)-np.log(min_wave))))
+#central_waves = min_wave/2*np.exp(1/3*(np.log(max_wave)-np.log(min_wave))*np.array([1,2,3]))*(1+np.exp(-1/3*(np.log(max_wave)-np.log(min_wave))))
+temp_central_waves = min_wave*np.exp(1/3*(np.log(max_wave)-np.log(min_wave))*np.array([1,2,3]))*(1+np.exp(-1/3*(np.log(max_wave)-np.log(min_wave))))
+a = temp_central_waves[0]-min_wave
+b = temp_central_waves[1]-a
+
+c1 = 2*min_wave/(1+min_wave/a)
+c2 = 2*a/(1+a/b)
+c3 = 2*b/(1+b/max_wave)
+
+central_waves = np.array([c1,c2,c3])
 
 new_specs = []
 for i in master_spec.channel_borders:
@@ -131,7 +140,7 @@ for spec in new_specs:
 
     wave = spec.mean*1e6
     centre = np.min(np.abs(central_waves-wave))+wave
-    phase_chop_errs = np.abs(min_phase_chops/2*wave/centre - min_phase_chops/2)
+    phase_chop_errs = np.abs(min_phase_chops/2*centre/wave - min_phase_chops/2)
 
     dphi[2] = phase_chop_errs[0]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
     dphi[4] = phase_chop_errs[1]+dphi_scale#np.sign(np.random.random()*2-1)*dphi_scale
